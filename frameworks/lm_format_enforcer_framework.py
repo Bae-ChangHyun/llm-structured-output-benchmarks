@@ -30,9 +30,9 @@ class LMFormatEnforcerFramework(BaseFramework):
             raise ValueError(f"Model family: {self.llm_model_family} not supported")
 
     def run(
-        self, task: str, n_runs: int, expected_response: Any = None, inputs: dict = {}
+        self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(n_runs=n_runs, expected_response=expected_response, task=task)
+        @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
             prompt = self.prompt.format(
                 json_schema=self.response_model.schema(), **inputs

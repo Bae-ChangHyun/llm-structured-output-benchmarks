@@ -1,6 +1,5 @@
 # python -m data_sources.generate_dataset generate-multilabel-data
 import json
-import random
 from collections import Counter
 
 import pandas as pd
@@ -10,37 +9,6 @@ from rich.progress import track
 from typer import Option, Typer
 
 app = Typer()
-
-
-def download_default_classification_dataset(
-    text_column: str = "utt", label_column: str = "intent"
-) -> pd.DataFrame:
-    """Download the default classification dataset from Hugging Face's datasets library. Defaults to the AmazonScience/massive dataset.
-
-    Args:
-        text_column (str, optional): The column name for the text data. Defaults to "utt" as defined in the default dataset.
-        label_column (str, optional):  The column name for the labels. Defaults to "intent" as defined in the default dataset.
-
-    Returns:
-        pd.DataFrame: A pandas DataFrame with the text and label columns.
-    """
-    logger.info(
-        "Downloading source data from https://huggingface.co/datasets/AmazonScience/massive"
-    )
-    dataset = load_dataset("AmazonScience/massive", "en-US", split="test")
-    dataset = dataset.select_columns([text_column, label_column])
-
-    logger.info("Processing the text and label columns")
-    dataset = dataset.rename_columns({text_column: "text", label_column: "class_label"})
-    class_names = dataset.features["class_label"].names
-
-    dataset = dataset.map(
-        lambda row: {"label": class_names[row["class_label"]]},
-        remove_columns=["class_label"],
-    )
-
-    return dataset.to_pandas()
-
 
 def label_entity(row: dict) -> dict:
     """Convert rows to entities.
@@ -110,67 +78,6 @@ def download_default_ner_dataset(
     df = df.drop(columns=["ner_label"])
 
     return df
-
-
-@app.command()
-def generate_multilabel_data(
-    source_data_pickle_path: str = Option(
-        None,
-        help="Path to the source pandas dataframe pickle file. Must contain atleast two columns: one for text and one for labels",
-    ),
-    source_dataframe_text_column: str = Option(
-        "text", help="The column name for the text data."
-    ),
-    source_dataframe_label_column: str = Option(
-        "label", help="The column name for the labels."
-    ),
-    dest_num_rows: int = Option(
-        100, help="Number of rows to keep in the final dataframe."
-    ),
-    dest_label_distribution: str = Option(
-        default='{"1": 0.35, "2": 0.30, "3": 0.20, "4": 0.15}',
-        help="JSON string of the probability of having each number of entities per row.",
-    ),
-) -> None:
-    """Generate synthetic multilabel classification data by combining rows from a source dataset."""
-    dest_label_distribution = json.loads(dest_label_distribution)
-    dest_label_distribution = {int(k): v for k, v in dest_label_distribution.items()}
-    if not source_data_pickle_path:
-        logger.info("No source data pickle file provided, downloading default dataset")
-        source_dataframe = download_default_classification_dataset()
-    else:
-        logger.info("Loading the source data from the provided pickle file")
-        source_dataframe = pd.read_pickle(source_data_pickle_path)
-
-    logger.info(f"Generating {dest_num_rows} synthetic rows")
-
-    multilabel_data = {"text": [], "labels": []}
-    for _ in track(range(dest_num_rows), description="Generating rows"):
-        num_rows = random.choices(
-            list(dest_label_distribution.keys()), list(dest_label_distribution.values())
-        )[0]
-        random_rows = source_dataframe.sample(num_rows)
-
-        multilabel_data["text"].append(
-            ". ".join(random_rows[source_dataframe_text_column].tolist())
-        )
-        multilabel_data["labels"].append(
-            random_rows[source_dataframe_label_column].tolist()
-        )
-
-    multilabel_df = pd.DataFrame(multilabel_data)
-
-    label_counter = Counter([len(label) for label in multilabel_df["labels"]])
-    label_counter = pd.DataFrame.from_records(
-        list(label_counter.items()), columns=["num_labels", "num_rows"]
-    ).sort_values("num_labels")
-
-    logger.info(f"Number of rows for each number of labels:\n{label_counter.head()}")
-
-    logger.info(f"First 5 rows:\n{multilabel_df.head()}")
-    multilabel_df.to_pickle("data/multilabel_classification.pkl")
-    logger.info("Saved multilabel data to: data/multilabel_classification.pkl")
-
 
 @app.command()
 def generate_ner_data(
