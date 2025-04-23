@@ -1,0 +1,37 @@
+# Framework to model family compatibility mapping
+# Each framework entry lists the supported model families
+# Available model families: openai, google, ollama, transformers
+
+VanillaOllamaFramework:
+  supported_families:
+    - ollama
+
+VanillaOpenAIFramework:
+  supported_families:
+    - openai
+
+VanillaGoogleFramework:
+  supported_families:
+    - google
+
+MarvinFramework:
+  supported_families:
+    - openai
+    - ollama
+
+LlamaIndexFramework:
+  supported_families:
+    - openai
+    - ollama
+
+InstructorFramework:
+  supported_families:
+    - openai
+
+MirascopeFramework:
+  supported_families:
+    - openai
+
+LMFormatEnforcerFramework:
+  supported_families:
+    - transformers

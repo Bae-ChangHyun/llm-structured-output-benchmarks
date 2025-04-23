@@ -11,6 +11,7 @@ from tqdm import tqdm
 import traceback
 
 from data_sources.data_models import ner_model
+from config.compatibility_checker import compatibility_checker, FrameworkCompatibilityError
 
 def response_parsing(response: Any) -> Any:
     if isinstance(response, list):
@@ -143,6 +144,11 @@ class BaseFramework(ABC):
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
+
+        # Check framework compatibility with model family
+        framework_name = self.__class__.__name__
+        compatibility_checker.check_compatibility(framework_name, self.llm_model_family)
+        
         source_data_pickle_path = kwargs.get("source_data_pickle_path", "")
 
         # Load the data

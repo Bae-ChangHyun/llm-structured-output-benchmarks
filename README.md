@@ -89,6 +89,23 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
          source_data_pickle_path: "data/ner.pkl"
    ```
 
+## 🔧 Framework Compatibility
+
+Each framework supports specific model families. The following table shows the compatibility between frameworks and model families:
+
+| Framework                 | OpenAI | Google | Ollama | Transformers |
+| ------------------------- | :----: | :----: | :----: | :----------: |
+| VanillaOpenAIFramework    |   ✅   |        |        |              |
+| VanillaGoogleFramework    |        |   ✅   |        |              |
+| VanillaOllamaFramework    |        |        |   ✅   |              |
+| InstructorFramework       |   ✅   |        |        |              |
+| MirascopeFramework        |   ✅   |        |        |              |
+| MarvinFramework           |   ✅   |        |   ✅   |              |
+| LlamaIndexFramework       |   ✅   |        |   ✅   |              |
+| LMFormatEnforcerFramework |        |        |        |      ✅      |
+
+To modify these compatibility settings, edit the `config/framework_compatibility.yaml` file.
+
 ## 🧪 NER Benchmark methodology
 
 - **Task**: Given a text, extract the entities present in it.
