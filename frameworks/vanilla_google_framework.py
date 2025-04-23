@@ -25,7 +25,7 @@ class VanillaGoogleFramework(BaseFramework):
                              'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf',
                              'required', 'dependencies', 'additionalProperties', 'propertyNames',
                              'contains', 'minProperties', 'maxProperties', 'minItems', 'maxItems',
-                             'uniqueItems', 'additionalItems']
+                             'uniqueItems', 'additionalItems',  '$defs', '$ref']
         
         # 스키마가 딕셔너리인 경우 재귀적으로 처리
         if isinstance(schema, dict):
@@ -61,9 +61,9 @@ class VanillaGoogleFramework(BaseFramework):
         return schema
         
     def run(
-        self, task: str, n_runs: int, expected_response: Any = None, inputs: dict = {}
+        self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(n_runs=n_runs, expected_response=expected_response, task=task)
+        @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
             #https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=python
             #https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=rest

@@ -141,38 +141,3 @@ def ner_micro_metrics(results: dict[str, list[float]]):
         micro_metrics["micro_f1"].append(micro_f1)
 
     return pd.DataFrame(micro_metrics)
-
-
-def variety_metric(predictions: dict[str, dict], results=None):
-    frameworks = []
-    models = []
-    variety_values = []
-    
-    if results is None:
-        results = {}
-    
-    for key, values in predictions.items():
-        framework, model = format_framework_name(key)
-        
-        # 모델 패밀리 정보가 있으면 추가
-        result_data = results.get(key, {})
-        model_family = result_data.get("llm_model_family", "")
-        if model_family:
-            model_display = f"{model}({model_family})"
-        else:
-            model_display = model
-            
-        frameworks.append(framework)
-        models.append(model_display)
-        variety_values.append(len({pred["name"] for pred in values}) / len(values))
-    
-    # 데이터프레임 생성 (프레임워크와 모델을 별도 컬럼으로)
-    variety_df = pd.DataFrame({
-        "Framework": frameworks,
-        "Model": models,
-        "Variety": variety_values
-    })
-    
-    variety_df = variety_df.round(3)
-    variety_df = variety_df.sort_values(by="Variety", ascending=False)
-    return variety_df

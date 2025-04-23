@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from openai import OpenAI
+from openai import OpenAI, base_url
 from loguru import logger
 
 from frameworks.base import BaseFramework, experiment
@@ -13,14 +13,15 @@ class VanillaOllamaFramework(BaseFramework):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        base_url = os.environ.get("OLLAMA_HOST") if os.environ.get("OLLAMA_HOST") else "http://localhost:11434/v1"
         self.openai_client = OpenAI(base_url=os.environ['OLLAMA_HOST'], api_key="1")
         
         logger.info("Ollama 클라이언트가 초기화되었습니다.")
 
     def run(
-        self, task: str, n_runs: int, expected_response: Any = None, inputs: dict = {}
+        self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(n_runs=n_runs, expected_response=expected_response, task=task)
+        @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
             response = self.openai_client.beta.chat.completions.parse(
                 model=self.llm_model,

@@ -1,12 +1,4 @@
 VanillaOpenAIFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -14,24 +6,8 @@ VanillaOpenAIFramework:
       llm_model: "gpt-4o-mini-2024-07-18"
       llm_model_family: "openai"
       source_data_pickle_path: "data/ner.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
 
 InstructorFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -40,25 +16,8 @@ InstructorFramework:
       llm_model_family: "openai"
       retries: 2
       source_data_pickle_path: "data/ner.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
 
 MirascopeFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -67,36 +26,8 @@ MirascopeFramework:
       llm_model_family: "openai"
       retries: 2
       source_data_pickle_path: "data/ner.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
-
-FructoseFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 0 # Fructose has no retry parameter
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
 
 MarvinFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 0 # Marvin has no retry parameter
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -105,24 +36,8 @@ MarvinFramework:
       llm_model_family: "openai"
       retries: 0 # Marvin has no retry parameter
       source_data_pickle_path: "data/ner.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
 
 LlamaIndexFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 0 # LlamaIndex has no retry parameter
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -131,44 +46,8 @@ LlamaIndexFramework:
       llm_model_family: "openai"
       retries: 0 # LlamaIndex has no retry parameter
       source_data_pickle_path: "data/ner.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-
-OutlinesFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}.\nRespond in the following json schema: {json_schema}:\n"
-      llm_model: "unsloth/llama-3-8b-Instruct-bnb-4bit"
-      llm_model_family: "transformers"
-      retries: 0 # Oulines transformers has no retry parameter
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      max_length: 4096
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose.\nRespond in the following json schema: {json_schema}:\n"
-      llm_model: "unsloth/llama-3-8b-Instruct-bnb-4bit"
-      llm_model_family: "transformers"
-      max_length: 4096
 
 LMFormatEnforcerFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
-    init_kwargs:
-      prompt: "Classify the following text: {text}.\nRespond in the following json schema: {json_schema}:\n"
-      llm_model: "unsloth/llama-3-8b-Instruct-bnb-4bit"
-      llm_model_family: "transformers"
-      retries: 0 
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      max_length: 4096
-      # sample_rows: 2
   - task: "ner"
     n_runs: 10
     init_kwargs:
@@ -178,62 +57,23 @@ LMFormatEnforcerFramework:
       retries: 0 
       source_data_pickle_path: "data/ner.pkl"
       max_length: 4096
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
+
+VanillaGoogleFramework:
+  - task: "ner"
+    n_runs: 1
     init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose.\nRespond in the following json schema: {json_schema}:\n"
-      llm_model: "unsloth/llama-3-8b-Instruct-bnb-4bit"
-      llm_model_family: "transformers"
-      max_length: 4096
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemini-2.0-flash"
+      llm_model_family: "google"
+      source_data_pickle_path: "data/ner.pkl"
+      api_delay_seconds: 5
 
-ModelsmithFramework:
-  - task: "multilabel_classification"
-    n_runs: 10
+VanillaOllamaFramework:
+  - task: "ner"
+    n_runs: 1
     init_kwargs:
-      prompt: "Classify the following text: {text}"
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
-      source_data_pickle_path: "data/multilabel_classification.pkl"
-      # sample_rows: 2
-  - task: "synthetic_data_generation"
-    n_runs: 100
-    init_kwargs:
-      prompt: "Generate a random person's information. The name must be chosen at random. Make it something you wouldn't normally choose."
-      llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_family: "openai"
-      retries: 2
-
-# ModelsmithFramework:
-#   - task: "ner"
-#     n_runs: 10
-#     init_kwargs:
-#       prompt: "Extract and resolve a list of entities from the following text: {text}"
-#       llm_model: "gpt-4o-mini-2024-07-18"
-#       llm_model_family: "openai"
-#       retries: 2
-#       source_data_pickle_path: "data/ner.pkl"
-#       sample_rows: 2
-
-# FructoseFramework:
-#   - task: "ner"
-#     n_runs: 10
-#     init_kwargs:
-#       prompt: "Extract and resolve a list of entities from the following text: {text}"
-#       llm_model: "gpt-4o-mini-2024-07-18"
-#       llm_model_family: "openai"
-#       retries: 0 # Fructose has no retry parameter
-#       source_data_pickle_path: "data/ner.pkl"
-#       # sample_rows: 2
-
-# OutlinesFramework:
-#   - task: "ner"
-#     n_runs: 10
-#     init_kwargs:
-#       prompt: "Extract and resolve a list of entities from the following text: {text}"
-#       llm_model: "unsloth/llama-3-8b-Instruct-bnb-4bit"
-#       llm_model_family: "transformers"
-#       retries: 0 # Oulines transformers has no retry parameter
-#       source_data_pickle_path: "data/ner.pkl"
-#       # sample_rows: 2
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:12b-it-qat"
+      llm_model_family: "ollama"
+      source_data_pickle_path: "data/ner.pkl"
+      host: "http://localhost:11434"

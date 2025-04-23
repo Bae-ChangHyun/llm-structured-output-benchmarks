@@ -48,7 +48,6 @@ def run_benchmark(
         results = {}
         for config in config_values:
             results[config_key] = {}
-            task = config["task"]
             n_runs = config["n_runs"]
             run_results = {
                 "predictions": [],
@@ -60,7 +59,7 @@ def run_benchmark(
             }
 
             framework_instance = factory(
-                config_key, task=task, device=device, **config["init_kwargs"]
+                config_key, device=device, **config["init_kwargs"]
             )
             logger.info(f"Using {type(framework_instance)}")
             
@@ -71,7 +70,7 @@ def run_benchmark(
             if isinstance(framework_instance.source_data, pd.DataFrame):
                 for row in tqdm(
                     framework_instance.source_data.itertuples(),
-                    desc=f"Running {framework_instance.task}",
+                    desc=f"Running NER benchmark",
                     total=len(framework_instance.source_data),
                 ):
                     # 데이터 샘플 간 API 지연 적용 (첫 번째 샘플 제외)
@@ -92,7 +91,6 @@ def run_benchmark(
                             inputs={"text": row.text},
                             n_runs=n_runs,
                             expected_response=labels,
-                            task=task,
                         )
                     )
                     # logger.info(f"Predicted Labels: {predictions}")
@@ -104,7 +102,6 @@ def run_benchmark(
                 predictions, percent_successful, _, latencies = (
                     framework_instance.run(
                         n_runs=n_runs,
-                        task=task,
                     )
                 )
                 # logger.info(f"Predicted Labels: {predictions}")
@@ -116,7 +113,7 @@ def run_benchmark(
 
             # logger.info(f"Results:\n{results}")
 
-            directory = f"results/{task}"
+            directory = f"results/ner"
             os.makedirs(directory, exist_ok=True)
             
             # 프레임워크 이름에 모델 이름 추가
@@ -134,20 +131,11 @@ def generate_results(
     results_data_path: str = typer.Option(
         "",
         "--results-path",
-        help="Path to directory containing benchmark results (default: ./results/[task])",
-    ),
-    task: str = typer.Option(
-        "multilabel_classification",
-        "--task", "-t", 
-        help="Task to generate results for: multilabel_classification, ner, or synthetic_data_generation",
-    ),
+        help="Path to directory containing benchmark results (default: ./results/ner)",
+    )
 ):
-    allowed_tasks = ["multilabel_classification", "ner", "synthetic_data_generation"]
-    if task not in allowed_tasks:
-        raise ValueError(f"{task} is not allowed. Allowed values are {allowed_tasks}")
-    
     if not results_data_path:
-        results_data_path = f"./results/{task}"
+        results_data_path = f"./results/ner"
 
     # Combine results from different frameworks
     results = {}
@@ -195,19 +183,9 @@ def generate_results(
     }
     logger.info(f"Latencies:\n{metrics.latency_metric(latencies, 95)}")
 
-    # NER Micro Metrics
-    if task == "ner":
-        micro_metrics_df = metrics.ner_micro_metrics(results)
-        micro_metrics_df = micro_metrics_df.sort_values(by="micro_f1", ascending=False)
-        logger.info(f"NER Micro Metrics:\n{micro_metrics_df}")
-
-    # Variety
-    if task == "synthetic_data_generation":
-        predictions = {
-            framework: value["predictions"][0]
-            for framework, value in results.items()
-        }
-        logger.info(f"Variety:\n{metrics.variety_metric(predictions)}")
+    micro_metrics_df = metrics.ner_micro_metrics(results)
+    micro_metrics_df = micro_metrics_df.sort_values(by="micro_f1", ascending=False)
+    logger.info(f"NER Micro Metrics:\n{micro_metrics_df}")
 
 if __name__ == "__main__":
     app()
