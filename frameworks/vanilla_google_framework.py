@@ -14,11 +14,6 @@ class VanillaGoogleFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
-        api_key = os.environ.get("GOOGLE_API_KEY")
-        if not api_key:
-            logger.error("GOOGLE_API_KEY is not set in the environment variables!")
-            raise ValueError("Export GOOGLE_API_KEY in your environment variables.")
-    
         genai.configure()
     
     def _convert_to_gemini_schema(self, schema):
@@ -70,6 +65,8 @@ class VanillaGoogleFramework(BaseFramework):
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
         @experiment(n_runs=n_runs, expected_response=expected_response, task=task)
         def run_experiment(inputs):
+            #https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=python
+            #https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=rest
             model = genai.GenerativeModel(self.llm_model)
             
             # response_model을 JSON 스키마로 변환
@@ -81,7 +78,7 @@ class VanillaGoogleFramework(BaseFramework):
             #gemini_schema_str = json.dumps(gemini_schema)
             #logger.info(f"Original Schema: {schema_str}...")
             #logger.info(f"Converted Schema for Gemini: {gemini_schema_str[:100]}...")
-              
+            
             response = model.generate_content(
                 self.prompt.format(**inputs),
                 generation_config={

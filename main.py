@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 
 import pandas as pd
 import torch
@@ -54,12 +55,18 @@ def run_benchmark(
                 "percent_successful": [],
                 "metrics": [],
                 "latencies": [],
+                "llm_model": config["init_kwargs"].get("llm_model", "unknown"),  # 모델 정보 저장
+                "llm_model_family": config["init_kwargs"].get("llm_model_family", "unknown"),  # 모델 패밀리 정보 저장
             }
 
             framework_instance = factory(
                 config_key, task=task, device=device, **config["init_kwargs"]
             )
             logger.info(f"Using {type(framework_instance)}")
+            
+            # API 지연 시간 설정 확인
+            api_delay_seconds = config["init_kwargs"].get("api_delay_seconds", 0)
+            is_first_sample = True
 
             if isinstance(framework_instance.source_data, pd.DataFrame):
                 for row in tqdm(
@@ -67,6 +74,12 @@ def run_benchmark(
                     desc=f"Running {framework_instance.task}",
                     total=len(framework_instance.source_data),
                 ):
+                    # 데이터 샘플 간 API 지연 적용 (첫 번째 샘플 제외)
+                    if not is_first_sample and api_delay_seconds > 0:
+                        time.sleep(api_delay_seconds)
+                    else:
+                        is_first_sample = False
+                        
                     if isinstance(row.labels, list):
                         labels = set(row.labels)
                     else:
@@ -105,10 +118,15 @@ def run_benchmark(
 
             directory = f"results/{task}"
             os.makedirs(directory, exist_ok=True)
-
-            with open(f"{directory}/{config_key}.pkl", "wb") as file:
-                pickle.dump(results, file)
-                logger.info(f"Results saved to {directory}/{config_key}.pkl")
+            
+            # 프레임워크 이름에 모델 이름 추가
+            model_name = config["init_kwargs"].get("llm_model", "unknown")
+            key_with_model = f"{config_key}_{model_name}"
+            
+            # 모델 이름이 포함된 키로 결과 저장
+            with open(f"{directory}/{key_with_model}.pkl", "wb") as file:
+                pickle.dump({key_with_model: run_results}, file)
+                logger.info(f"Results saved to {directory}/{key_with_model}.pkl")
 
 
 @app.command()
@@ -123,21 +141,7 @@ def generate_results(
         "--task", "-t", 
         help="Task to generate results for: multilabel_classification, ner, or synthetic_data_generation",
     ),
-    config_path: str = typer.Option(
-        "config.yaml",
-        "--config", "-c",
-        help="Path to configuration YAML file used for the benchmark (for reference only)",
-    ),
 ):
-    """
-    벤치마크 결과 생성: 벤치마크 결과를 분석하고 출력합니다.
-    
-    예시:
-    - 기본 결과 생성: python -m main generate-results
-    - 다른 태스크 지정: python -m main generate-results --task ner
-    - 다른 결과 디렉토리 지정: python -m main generate-results --results-path ./custom_results/multilabel_classification
-    - 참조용 설정 파일 지정: python -m main generate-results --config my_config.yaml
-    """
     allowed_tasks = ["multilabel_classification", "ner", "synthetic_data_generation"]
     if task not in allowed_tasks:
         raise ValueError(f"{task} is not allowed. Allowed values are {allowed_tasks}")
@@ -147,13 +151,35 @@ def generate_results(
 
     # Combine results from different frameworks
     results = {}
+    framework_model_info = {}
 
     for file_name in os.listdir(results_data_path):
         if file_name.endswith(".pkl"):
             file_path = os.path.join(results_data_path, file_name)
             with open(file_path, "rb") as file:
                 framework_results = pickle.load(file)
+                
+                # 새로운 결과 파일 형식 (프레임워크_모델명.pkl)과 이전 형식(프레임워크.pkl) 모두 지원
+                for key, value in framework_results.items():
+                    # 모델 정보를 framework_model_info에 저장
+                    if "llm_model" in value:
+                        framework_model_info[key] = {
+                            "model": value["llm_model"],
+                            "family": value.get("llm_model_family", "unknown")
+                        }
+                    # 아직 모델 정보가 없는 이전 형식 결과의 경우 기본값 설정
+                    else:
+                        framework_model_info[key] = {
+                            "model": "unknown",
+                            "family": "unknown"
+                        }
+                
                 results.update(framework_results)
+
+    # 로그에 모델 정보 표시
+    logger.info("Framework and Model Information:")
+    for framework, info in framework_model_info.items():
+        logger.info(f"{framework}: Model = {info['model']}, Family = {info['family']}")
 
     # Reliability
     percent_successful = {
@@ -172,6 +198,7 @@ def generate_results(
     # NER Micro Metrics
     if task == "ner":
         micro_metrics_df = metrics.ner_micro_metrics(results)
+        micro_metrics_df = micro_metrics_df.sort_values(by="micro_f1", ascending=False)
         logger.info(f"NER Micro Metrics:\n{micro_metrics_df}")
 
     # Variety
