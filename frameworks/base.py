@@ -89,13 +89,14 @@ def experiment(
                 )
 
             responses, latencies = [], []
-            for _ in tqdm(range(n_runs), leave=False):
-
+            for i in tqdm(range(n_runs), leave=False):
                 try:
                     start_time = time.time()
+                    logger.debug(f"실험 실행 {i+1}/{n_runs} 시작")
                     response = func(*args, **kwargs)
                     end_time = time.time()
-
+                    
+                    logger.debug(f"Response: {str(response)[:200]}...")
                     response = response_parsing(response)
 
                     if "classes" in response:
@@ -103,11 +104,15 @@ def experiment(
 
                     responses.append(response)
                     latencies.append(end_time - start_time)
-                except:
-                    pass
+                    logger.debug(f"실험 실행 {i+1}/{n_runs} Success (Time: {end_time - start_time:.2f}초)")
+                except Exception as e:
+                    logger.error(f"실험 실행 {i+1}/{n_runs} Failure: {str(e)}")
+                    import traceback
+                    logger.error(traceback.format_exc())
 
             num_successful = len(responses)
             percent_successful = num_successful / n_runs
+            logger.info(f"총 {n_runs}회 시도 중 {num_successful}회 성공 (성공률: {percent_successful:.2%})")
 
             # Metrics calculation
             if task == "multilabel_classification" and expected_response:
