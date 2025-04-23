@@ -87,6 +87,12 @@ def experiment(
                 raise ValueError(
                     f"{task} is not allowed. Allowed values are {allowed_tasks}"
                 )
+            
+            # self 객체 (BaseFramework 인스턴스) 가져오기
+            self = args[0]
+            
+            # config에서 api_delay_seconds 값을 가져오기 (없으면 0)
+            api_delay_seconds = getattr(self, "api_delay_seconds", 0)
 
             responses, latencies = [], []
             for i in tqdm(range(n_runs), leave=False):
@@ -105,6 +111,8 @@ def experiment(
                     responses.append(response)
                     latencies.append(end_time - start_time)
                     logger.debug(f"실험 실행 {i+1}/{n_runs} Success (Time: {end_time - start_time:.2f}초)")
+                    if api_delay_seconds > 0:
+                        time.sleep(api_delay_seconds)
                 except Exception as e:
                     logger.error(f"실험 실행 {i+1}/{n_runs} Failure: {str(e)}")
                     import traceback
@@ -151,6 +159,7 @@ class BaseFramework(ABC):
     sample_rows: int
     response_model: Any
     device: str
+    api_delay_seconds: float  # API 요청 사이의 지연 시간(초)
 
     def __init__(self, *args, **kwargs) -> None:
         self.task = kwargs.get("task", "")
@@ -159,6 +168,7 @@ class BaseFramework(ABC):
         self.llm_model_family = kwargs.get("llm_model_family", "openai")
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
+        self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
         source_data_pickle_path = kwargs.get("source_data_pickle_path", "")
 
         # Load the data
@@ -200,6 +210,8 @@ class BaseFramework(ABC):
             self.response_model = synthetic_data_generation_model()
 
         logger.info(f"Response model is {self.response_model}")
+        if self.api_delay_seconds > 0:
+            logger.info(f"API 요청 사이의 지연 시간: {self.api_delay_seconds}초")
 
     @abstractmethod
     def run(self, n_runs: int, expected_response: Any, *args, **kwargs): ...
