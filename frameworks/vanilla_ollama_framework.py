@@ -1,24 +1,22 @@
-from typing import Any
 import os
+from typing import Any
 
-from openai import OpenAI
+from openai import OpenAI, base_url
 from loguru import logger
 
 from frameworks.base import BaseFramework, experiment
 
 
-class VanillaOpenAIFramework(BaseFramework):
+class VanillaOllamaFramework(BaseFramework):
+    """_summary_
+    https://ollama.com/blog/structured-outputs
+    """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        base_url = os.environ.get("OLLAMA_HOST") if os.environ.get("OLLAMA_HOST") else "http://localhost:11434/v1"
+        self.openai_client = OpenAI(base_url=os.environ['OLLAMA_HOST'], api_key="1")
         
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            logger.error("OPENAI_API_KEY is not set in the environment variables!")
-            raise ValueError("Export OEPN_API_KEY in your environment variables.")
-            
-        self.openai_client = OpenAI()
-        
-        logger.info("OpenAI 클라이언트가 초기화되었습니다.")
+        logger.info("Ollama 클라이언트가 초기화되었습니다.")
 
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}

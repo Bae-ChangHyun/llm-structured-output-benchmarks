@@ -8,13 +8,9 @@ import pandas as pd
 from loguru import logger
 from pydantic import BaseModel
 from tqdm import tqdm
+import traceback
 
-from data_sources.data_models import (
-    multilabel_classification_model,
-    ner_model,
-    synthetic_data_generation_model,
-)
-
+from data_sources.data_models import ner_model
 
 def response_parsing(response: Any) -> Any:
     if isinstance(response, list):
@@ -67,14 +63,12 @@ def calculate_metrics(
 def experiment(
     n_runs: int = 10,
     expected_response: Any = None,
-    task: str = "multilabel_classification",
 ) -> Callable[..., tuple[list[Any], int, Optional[dict], list[list[float]]]]:
     """Decorator to run an LLM call function multiple times and return the responses
 
     Args:
         n_runs (int): Number of times to run the function
         expected_response (Any): The expected response. If provided, the decorator will calculate accurary too.
-        task (str): The task being performed. Default is "multilabel_classification". Available options are "multilabel_classification" and "ner"
 
     Returns:
         Callable[..., Tuple[List[Any], int, Optional[dict], list[list[float]]]]: A function that returns a list of outputs from the function runs, percent of successful runs, metrics if expected_response is provided else None and list of latencies for each call.
@@ -82,20 +76,20 @@ def experiment(
 
     def experiment_decorator(func):
         def wrapper(*args, **kwargs):
-            allowed_tasks = ["multilabel_classification", "ner", "synthetic_data_generation"]
-            if task not in allowed_tasks:
-                raise ValueError(
-                    f"{task} is not allowed. Allowed values are {allowed_tasks}"
-                )
+            # self 객체 (BaseFramework 인스턴스) 가져오기
+            self = args[0]
+            # config에서 api_delay_seconds 값을 가져오기 (없으면 0)
+            api_delay_seconds = getattr(self, "api_delay_seconds", 0)
 
             responses, latencies = [], []
-            for _ in tqdm(range(n_runs), leave=False):
-
+            for i in tqdm(range(n_runs), leave=False):
                 try:
                     start_time = time.time()
+                    logger.debug(f"실험 실행 {i+1}/{n_runs} 시작")
                     response = func(*args, **kwargs)
                     end_time = time.time()
-
+                    
+                    logger.debug(f"Response: {str(response)[:200]}...")
                     response = response_parsing(response)
 
                     if "classes" in response:
@@ -103,26 +97,21 @@ def experiment(
 
                     responses.append(response)
                     latencies.append(end_time - start_time)
-                except:
-                    pass
+                    logger.debug(f"실험 실행 {i+1}/{n_runs} Success (Time: {end_time - start_time:.2f}초)")
+                    if api_delay_seconds > 0:
+                        time.sleep(api_delay_seconds)
+                except Exception as e:
+                    logger.error(f"실험 실행 {i+1}/{n_runs} Failure: {str(e)}")
+
+                    logger.error(traceback.format_exc())
 
             num_successful = len(responses)
             percent_successful = num_successful / n_runs
+            logger.info(f"총 {n_runs}회 시도 중 {num_successful}회 성공 (성공률: {percent_successful:.2%})")
 
-            # Metrics calculation
-            if task == "multilabel_classification" and expected_response:
-                accurate = 0
-                for response in responses:
-                    if response == expected_response:
-                        accurate += 1
-
-                framework_metrics = {
-                    "accuracy": accurate / num_successful if num_successful else 0
-                }
-            elif task == "ner":
-                framework_metrics = []
-                for response in responses:
-                    framework_metrics.append(calculate_metrics(expected_response, response))
+            framework_metrics = []
+            for response in responses:
+                framework_metrics.append(calculate_metrics(expected_response, response))
 
             return (
                 responses,
@@ -137,7 +126,6 @@ def experiment(
 
 
 class BaseFramework(ABC):
-    task: str
     prompt: str
     llm_model: str
     llm_model_family: str
@@ -146,14 +134,15 @@ class BaseFramework(ABC):
     sample_rows: int
     response_model: Any
     device: str
+    api_delay_seconds: float  # API 요청 사이의 지연 시간(초)
 
     def __init__(self, *args, **kwargs) -> None:
-        self.task = kwargs.get("task", "")
         self.prompt = kwargs.get("prompt", "")
         self.llm_model = kwargs.get("llm_model", "gpt-3.5-turbo")
         self.llm_model_family = kwargs.get("llm_model_family", "openai")
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
+        self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
         source_data_pickle_path = kwargs.get("source_data_pickle_path", "")
 
         # Load the data
@@ -168,33 +157,9 @@ class BaseFramework(ABC):
         else:
             self.source_data = None
 
-        # Create the response model
-        if "response_model" in kwargs:
-            self.response_model = kwargs["response_model"]
-        elif self.task == "multilabel_classification":
-            # Identify the classes
-            if isinstance(self.source_data.iloc[0]["labels"], list):
-                self.classes = self.source_data["labels"].explode().unique()
-            else:
-                self.classes = self.source_data["labels"].unique()
-            logger.info(
-                f"Source data has {len(self.source_data)} rows and {len(self.classes)} classes"
-            )
 
-            self.response_model = multilabel_classification_model(self.classes)
-
-        elif self.task == "ner":
-            # Identify the entities
-            self.entities = list(
-                {key for d in self.source_data["labels"] for key in d.keys()}
-            )
-
-            self.response_model = ner_model(self.entities)
-
-        elif self.task == "synthetic_data_generation":
-            self.response_model = synthetic_data_generation_model()
-
-        logger.info(f"Response model is {self.response_model}")
+        self.entities = list({key for d in self.source_data["labels"] for key in d.keys()})
+        self.response_model = ner_model(self.entities)
 
     @abstractmethod
     def run(self, n_runs: int, expected_response: Any, *args, **kwargs): ...
