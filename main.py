@@ -38,7 +38,7 @@ def run_benchmark(
         
     logger.info(f"설정 파일 사용: {config_path}")
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.info(f"사용 디바이스: {device} (로컬 모델용)")
+    logger.info(f"Using device: {device} for local models")
 
     with open(config_path, "r") as file:
         configs = yaml.safe_load(file)
@@ -144,11 +144,6 @@ def generate_results(
     
     if not results_data_path:
         results_data_path = f"./results/{task}"
-        
-    logger.info(f"결과 분석 중: {results_data_path}")
-    if not os.path.exists(results_data_path):
-        logger.error(f"결과 디렉토리를 찾을 수 없습니다: {results_data_path}")
-        raise typer.Exit(code=1)
 
     # Combine results from different frameworks
     results = {}
