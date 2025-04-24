@@ -9,8 +9,10 @@ import yaml
 from loguru import logger
 from tqdm import tqdm
 
-from frameworks import factory, metrics
+from frameworks import factory
 from dotenv import load_dotenv
+
+import metrics
 
 load_dotenv()
 
@@ -37,7 +39,6 @@ def run_benchmark(
         logger.error(f"설정 파일을 찾을 수 없습니다: {config_path}")
         raise typer.Exit(code=1)
         
-    logger.info(f"설정 파일 사용: {config_path}")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Using device: {device} for local models")
 
@@ -63,7 +64,7 @@ def run_benchmark(
             )
             logger.info(f"Using {type(framework_instance)}")
             
-            # API 지연 시간 설정 확인
+            # API 지연 시간 설정 확인(for free API)
             api_delay_seconds = config["init_kwargs"].get("api_delay_seconds", 0)
             is_first_sample = True
 
@@ -73,7 +74,6 @@ def run_benchmark(
                     desc=f"Running NER benchmark",
                     total=len(framework_instance.source_data),
                 ):
-                    # 데이터 샘플 간 API 지연 적용 (첫 번째 샘플 제외)
                     if not is_first_sample and api_delay_seconds > 0:
                         time.sleep(api_delay_seconds)
                     else:
@@ -104,14 +104,11 @@ def run_benchmark(
                         n_runs=n_runs,
                     )
                 )
-                # logger.info(f"Predicted Labels: {predictions}")
                 run_results["predictions"].append(predictions)
                 run_results["percent_successful"].append(percent_successful)
                 run_results["latencies"].append(latencies)
 
             results[config_key] = run_results
-
-            # logger.info(f"Results:\n{results}")
 
             directory = f"results/ner"
             os.makedirs(directory, exist_ok=True)
