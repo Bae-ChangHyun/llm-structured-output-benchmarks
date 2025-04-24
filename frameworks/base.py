@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any, Callable, Optional
 
 import pandas as pd
+import json
 from loguru import logger
 from pydantic import BaseModel
 from tqdm import tqdm
@@ -136,6 +137,7 @@ class BaseFramework(ABC):
     response_model: Any
     device: str
     api_delay_seconds: float  # API 요청 사이의 지연 시간(초)
+    description_path: str
 
     def __init__(self, *args, **kwargs) -> None:
         self.prompt = kwargs.get("prompt", "")
@@ -144,6 +146,7 @@ class BaseFramework(ABC):
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
+        self.description_path = kwargs.get("description_path", "")
 
         # Check framework compatibility with model family
         framework_name = self.__class__.__name__
@@ -162,10 +165,15 @@ class BaseFramework(ABC):
             logger.info(f"Loaded source data from {source_data_pickle_path}")
         else:
             self.source_data = None
+        
 
 
         self.entities = list({key for d in self.source_data["labels"] for key in d.keys()})
-        self.response_model = ner_model(self.entities)
+        
+        if self.description_path != "":
+            with open(self.description_path, "r", encoding="utf-8") as file:
+                self.descriptions = json.load(file)
+        self.response_model = ner_model(self.entities, self.descriptions)
 
     @abstractmethod
     def run(self, n_runs: int, expected_response: Any, *args, **kwargs): ...
