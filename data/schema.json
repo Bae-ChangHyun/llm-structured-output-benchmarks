@@ -1,0 +1,19 @@
+{
+    "personal_info_name": "지원자의 이름을 나타내는 엔티티입니다",
+    "personal_info_email": "지원자의 이메일 주소를 나타내는 엔티티입니다",
+    "personal_info_phone": "지원자의 전화번호를 나타내는 엔티티입니다",
+    "personal_info_address": "지원자의 주소를 나타내는 엔티티입니다",
+    "personal_info_age": "지원자의 나이를 나타내는 엔티티입니다",
+    "education_institution": "학교 및 교육 기관의 이름을 나타내는 엔티티입니다",
+    "education_degree": "학위 및 자격증 종류를 나타내는 엔티티입니다",  
+    "education_score": "학점 또는 성적을 나타내는 엔티티입니다",
+    "education_major": "전공을 나타내는 엔티티입니다",
+    "education_period": "교육 기간을 나타내는 엔티티입니다",
+    "activities_title": "활동 및 경력의 제목을 나타내는 엔티티입니다",
+    "activities_description": "활동 및 경력의 설명을 나타내는 엔티티입니다",
+    "activities_period": "활동 및 경력의 기간을 나타내는 엔티티입니다",
+    "certificates_name": "자격증 및 인증의 이름을 나타내는 엔티티입니다",
+    "certificates_score": "자격증 및 인증의 점수를 나타내는 엔티티입니다",
+    "certificates_issuer": "자격증 및 인증의 발급 기관을 나타내는 엔티티입니다",
+    "certificates_date": "자격증 및 인증의 발급 날짜를 나타내는 엔티티입니다"
+}
