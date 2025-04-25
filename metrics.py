@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 
 
-def format_framework_name(framework_name, model_family=None):
+def format_framework_name(framework_name, model_host=None):
     """프레임워크 이름과 모델 이름을 포맷팅하는 함수.
     
     Args:
         framework_name (str): '프레임워크_모델이름' 형식의 문자열
-        model_family (str, optional): 모델 패밀리 이름
+        model_host (str, optional): 모델 패밀리 이름
         
     Returns:
         tuple: (프레임워크 이름, 모델 이름) 형식의 튜플
@@ -25,22 +25,22 @@ def format_framework_name(framework_name, model_family=None):
         return framework_name.replace("Framework", ""), "unknown"
 
 
-def reliability_metric(percent_successful: dict[str, list[float]], model_families=None):
+def reliability_metric(percent_successful: dict[str, list[float]], model_hosts=None):
     # 프레임워크와 모델 이름 분리
     frameworks = []
     models = []
     reliabilities = []
     
-    if model_families is None:
-        model_families = {}
+    if model_hosts is None:
+        model_hosts = {}
     
     for key, values in percent_successful.items():
         framework, model = format_framework_name(key)
         
         # 모델 패밀리 정보가 있으면 추가
-        model_family = model_families.get(key, {}).get("family", "")
-        if model_family:
-            model_display = f"{model}({model_family})"
+        model_host = model_hosts.get(key, {}).get("host", "")
+        if model_host:
+            model_display = f"{model}({model_host})"
         else:
             model_display = model
             
@@ -60,7 +60,7 @@ def reliability_metric(percent_successful: dict[str, list[float]], model_familie
     return reliability_df
 
 
-def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, model_families=None):
+def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, model_hosts=None):
     # Flatten the list of latencies
     latencies = {
         key: list(itertools.chain.from_iterable(value))
@@ -72,16 +72,16 @@ def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, mode
     models = []
     latency_values = []
     
-    if model_families is None:
-        model_families = {}
+    if model_hosts is None:
+        model_hosts = {}
     
     for key, values in latencies.items():
         framework, model = format_framework_name(key)
         
         # 모델 패밀리 정보가 있으면 추가
-        model_family = model_families.get(key, {}).get("family", "unknown")
+        model_host = model_hosts.get(key, {}).get("host", "unknown")
 
-        model_display = f"{model}({model_family})"
+        model_display = f"{model}({model_host})"
 
             
         frameworks.append(framework)
@@ -100,7 +100,16 @@ def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, mode
     return latency_df
 
 
-def ner_micro_metrics(results: dict[str, list[float]]):
+def ner_micro_metrics(results: dict[str, dict], ground_truths=None):
+    """NER 작업에 대한 마이크로 평가 지표를 계산합니다.
+    
+    Args:
+        results (dict): 프레임워크별 예측 결과가 포함된 딕셔너리
+        ground_truths (list, optional): 정답 데이터. None인 경우 results에 저장된 metrics 사용
+        
+    Returns:
+        pd.DataFrame: 마이크로 정밀도, 재현율, F1 점수가 포함된 데이터프레임
+    """
     micro_metrics = {
             "Framework": [],
             "Model(host)": [],
@@ -110,15 +119,36 @@ def ner_micro_metrics(results: dict[str, list[float]]):
         }
     
     for framework, values in results.items():
+        # ground_truths가 제공되지 않은 경우 저장된 metrics 사용
+       
         tp_total, fp_total, fn_total = 0, 0, 0
-        runs = values["metrics"]
+        predictions = values["predictions"]
+        
+        # 각 예측마다 true positives, false positives, false negatives 계산
+        for i, pred_runs in enumerate(predictions):
+            truth = ground_truths[i]
+            
+            # 각 실행마다 집계
+            for pred in pred_runs:
+                # 카테고리별로 집계
+                for category in set(list(pred.keys()) + list(truth.keys())):
+                    pred_entities = set(pred.get(category, []))
+                    true_entities = set(truth.get(category, []))
+                    
+                    # True Positives: 예측과 실제가 일치하는 항목
+                    true_positives = len(pred_entities.intersection(true_entities))
+                    
+                    # False Positives: 예측은 했지만 실제론 없는 항목
+                    false_positives = len(pred_entities - true_entities)
+                    
+                    # False Negatives: 예측하지 못한 실제 항목
+                    false_negatives = len(true_entities - pred_entities)
+                    
+                    tp_total += true_positives
+                    fp_total += false_positives
+                    fn_total += false_negatives
 
-        for run in runs:
-            for metric in run:
-                tp_total += sum(metric["true_positives"].values())
-                fp_total += sum(metric["false_positives"].values())
-                fn_total += sum(metric["false_negatives"].values())
-
+        # 정밀도, 재현율, F1 계산
         micro_precision = tp_total / (tp_total + fp_total) if (tp_total + fp_total) > 0 else 0
         micro_recall = tp_total / (tp_total + fn_total) if (tp_total + fn_total) > 0 else 0
         micro_f1 = (
@@ -131,8 +161,8 @@ def ner_micro_metrics(results: dict[str, list[float]]):
         framework_name, model_name = format_framework_name(framework)
         
         # 모델 패밀리 정보가 있으면 추가
-        model_family = values.get("llm_model_family", "unknown")
-        model_display = f"{model_name}({model_family})"
+        model_host = values.get("llm_model_host", "unknown")
+        model_display = f"{model_name}({model_host})"
         
         micro_metrics["Framework"].append(framework_name)
         micro_metrics["Model(host)"].append(model_display)
@@ -141,3 +171,78 @@ def ner_micro_metrics(results: dict[str, list[float]]):
         micro_metrics["micro_f1"].append(micro_f1)
 
     return pd.DataFrame(micro_metrics)
+
+
+def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: int = 95, sort_by: str = "micro_f1"):
+    """모든 평가 지표(정밀도, 재현율, F1, 신뢰성, 지연 시간)를 하나의 표로 통합합니다.
+    
+    Args:
+        results (dict): 프레임워크별 예측 결과가 포함된 딕셔너리
+        ground_truths (list, optional): 정답 데이터. None인 경우 results에 저장된 metrics 사용
+        percentile (int, optional): 지연 시간 백분위 기준. 기본값은 95
+        sort_by (str, optional): 정렬 기준 ('micro_f1', 'micro_recall', 'micro_precision', 'reliability', 'latency' 중 하나). 기본값은 'micro_f1'
+        
+    Returns:
+        pd.DataFrame: 모든 지표가 포함된 데이터프레임
+    """
+    # 데이터 준비
+    percent_successful = {
+        framework: value["percent_successful"]
+        for framework, value in results.items()
+    }
+    
+    latencies = {
+        framework: value["latencies"]
+        for framework, value in results.items()
+    }
+    
+    # 모델 호스트 정보 추출
+    model_hosts = {}
+    for framework, value in results.items():
+        model_hosts[framework] = {
+            "model": value.get("llm_model", "unknown"),
+            "host": value.get("llm_model_host", "unknown")
+        }
+    
+    # 각 지표 계산
+    ner_df = ner_micro_metrics(results, ground_truths)
+    reliability_df = reliability_metric(percent_successful, model_hosts)
+    latency_df = latency_metric(latencies, percentile, model_hosts)
+    
+    # 데이터프레임 병합
+    combined_df = ner_df.merge(
+        reliability_df, on=["Framework", "Model(host)"], how="outer"
+    ).merge(
+        latency_df, on=["Framework", "Model(host)"], how="outer"
+    )
+    
+    # 컬럼명 정리
+    combined_df = combined_df.rename(columns={
+        f"Latency_p{percentile}(s)": "Latency"
+    })
+    
+    # 숫자 반올림
+    numeric_cols = ["micro_precision", "micro_recall", "micro_f1", "Reliability", "Latency"]
+    combined_df[numeric_cols] = combined_df[numeric_cols].round(3)
+    
+    # 사용자 정의 정렬 기준으로 정렬
+    sort_column = {
+        "f1": "micro_f1",
+        "micro_f1": "micro_f1",
+        "recall": "micro_recall",
+        "micro_recall": "micro_recall",
+        "precision": "micro_precision",
+        "micro_precision": "micro_precision",
+        "reliability": "Reliability",
+        "latency": "Latency"
+    }.get(sort_by.lower(), "micro_f1")
+    
+    # 지연 시간은 낮을수록 좋으므로 오름차순 정렬, 나머지는 내림차순 정렬
+    ascending = (sort_column == "Latency")
+    
+    combined_df = combined_df.sort_values(by=sort_column, ascending=ascending)
+    
+    # 인덱스 재설정 (인덱스를 순차적으로 새로 부여하고 인덱스 컬럼 제거)
+    combined_df = combined_df.reset_index(drop=True)
+    
+    return combined_df

@@ -1,0 +1,30 @@
+VanillaOllamaFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:12b-it-qat"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/resume/llm-structured-output-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:27b-it-qat"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/resume/llm-structured-output-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:12b"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/resume/llm-structured-output-benchmarks/data/schema.json"

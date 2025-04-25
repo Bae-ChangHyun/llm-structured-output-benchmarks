@@ -12,7 +12,7 @@ from tqdm import tqdm
 import traceback
 
 from data_sources.data_models import ner_model
-from config.compatibility_checker import compatibility_checker, FrameworkCompatibilityError
+from config.config_checker import compatibility_checker, FrameworkCompatibilityError
 
 def response_parsing(response: Any) -> Any:
     if isinstance(response, list):
@@ -130,7 +130,7 @@ def experiment(
 class BaseFramework(ABC):
     prompt: str
     llm_model: str
-    llm_model_family: str
+    llm_model_host: str
     retries: int
     source_data_pickle_path: str
     sample_rows: int
@@ -142,15 +142,15 @@ class BaseFramework(ABC):
     def __init__(self, *args, **kwargs) -> None:
         self.prompt = kwargs.get("prompt", "")
         self.llm_model = kwargs.get("llm_model", "gpt-3.5-turbo")
-        self.llm_model_family = kwargs.get("llm_model_family", "openai")
+        self.llm_model_host = kwargs.get("llm_model_host", "openai")
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
         self.description_path = kwargs.get("description_path", "")
 
-        # Check framework compatibility with model family
+        # Check framework compatibility with model host
         framework_name = self.__class__.__name__
-        compatibility_checker.check_compatibility(framework_name, self.llm_model_family)
+        compatibility_checker.check_compatibility(framework_name, self.llm_model_host)
         
         source_data_pickle_path = kwargs.get("source_data_pickle_path", "")
 

@@ -87,14 +87,12 @@ class VanillaGoogleFramework(BaseFramework):
             gemini_schema = self._convert_to_gemini_schema(schema)
             
             # For debugging
-            schema_str = json.dumps(schema)
-            gemini_schema_str = json.dumps(gemini_schema)
-            with open("schema.json", "w") as f:
-                f.write(schema_str)
-            with open("gemini_schema.json", "w") as f:
-                f.write(gemini_schema_str)
-            #logger.info(f"Original Schema: {schema_str}...")
-            #logger.info(f"Converted Schema for Gemini: {gemini_schema_str}...")
+            # schema_str = json.dumps(schema)
+            # gemini_schema_str = json.dumps(gemini_schema)
+            # with open("schema.json", "w") as f:
+            #     f.write(schema_str)
+            # with open("gemini_schema.json", "w") as f:
+            #     f.write(gemini_schema_str)
             
             response = model.generate_content(
                 self.prompt.format(**inputs),
