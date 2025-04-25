@@ -1,0 +1,38 @@
+# Framework to model host compatibility mapping
+# Each framework entry lists the supported model hosts
+# Available model hosts: openai, google, ollama, transformers
+# Don't modify below contents
+
+VanillaOllamaFramework:
+  hosts:
+    - ollama
+
+VanillaOpenAIFramework:
+  hosts:
+    - openai
+
+VanillaGoogleFramework:
+  hosts:
+    - google
+
+MarvinFramework:
+  hosts:
+    - openai
+    - ollama
+
+LlamaIndexFramework:
+  hosts:
+    - openai
+    - ollama
+
+InstructorFramework:
+  hosts:
+    - openai
+
+MirascopeFramework:
+  hosts:
+    - openai
+
+LMFormatEnforcerFramework:
+  hosts:
+    - transformers

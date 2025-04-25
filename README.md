@@ -34,25 +34,66 @@ I would like to express gratitude to the original author for their contribution 
 
 ## 🏃 Run the benchmark
 
-1. Install the requirements using `pip install -r requirements.txt`
-2. Set up your API keys:
-   - Create a `.env` file in the root directory based on the provided `.env copy` template
-   - Fill in your API keys:
-     ```
+1. **Install the requirements**  
+   Run the following command to install the required dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Set up your API keys**
+
+   - Create a `.env` file in the root directory based on the provided `.env copy` template.
+   - Fill in your API keys as follows:
+     ```env
      OLLAMA_HOST=your_ollama_host
      OPENAI_API_KEY=your_openai_key
      GOOGLE_API_KEY=your_google_key
      ```
-   - Alternatively, you can export them directly: `export OPENAI_API_KEY=sk-...`
-3. Run the benchmark using `python -m main run-benchmark`
-   - You can specify a custom config file with `-c` or `--config`: `python -m main run-benchmark -c path/to/your/config.yaml`
-4. Raw results are stored in the `results` directory.
-5. Generate the results using `python -m main generate-results`
-6. To get help on the command line arguments, add `--help` after the command. Eg., `python -m main run-benchmark --help`
+
+3. **Prepare your configuration file**
+
+   - Write your own configuration file for the benchmark. Refer to the examples in the `sample_config` directory for guidance.
+
+4. **Run the benchmark**  
+   Use the following command to execute the benchmark:
+
+   ```bash
+   python -m main run-benchmark
+   ```
+
+   - You can specify a custom configuration file using the `--config` (`-c`) option.
+   - Specify the results directory using the `--results-path` (`-r`) option.
+   - For detailed help, run:
+     ```bash
+     python -m main run-benchmark --help
+     ```
+
+5. **Generate the results**  
+   Use the following command to generate and view the results:
+
+   ```bash
+   python -m main show-results
+   ```
+
+   - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses using the `--ground-truth` (`-g`) option.
+   - To compare multiple experiment results, specify multiple result directories using the `--result-path` (`-r`) option.
+   - Customize the sorting of evaluation metrics using the `--sort-by` (`-s`) option.
+   - For detailed help, run:
+     ```bash
+     python -m main show-results --help
+     ```
+
+6. **Get help on command-line arguments**  
+   Add `--help` after any command to view detailed usage instructions.
+   ```bash
+   python -m main --help
+   ```
 
 ## ⚙️ Configuring the benchmark
 
-The benchmark is configured using a YAML file (default: `config.yaml`). Here's how to set up your configuration:
+The benchmark is configured using a YAML file (default: `config.yaml`).
+Here's how to set up your configuration:
 
 1. Each framework is defined as a top-level entry in the config file:
 
@@ -63,12 +104,12 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
        init_kwargs: # Framework initialization parameters
          prompt: "Your prompt template with {text} placeholder"
          llm_model: "model-name"
-         llm_model_family: "openai|google|ollama|transformers"
+         llm_model_host: "openai|google|ollama|transformers"
          source_data_pickle_path: "data/your_dataset.pkl"
          # Additional framework-specific parameters
    ```
 
-2. Supported `llm_model_family` values:
+2. Supported `llm_model_host` values:
 
    - `openai`: OpenAI models (requires OPENAI_API_KEY)
    - `google`: Google models like Gemini (requires GOOGLE_API_KEY)
@@ -78,6 +119,7 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
 3. To add a new model configuration, simply create a new entry in the config file with appropriate parameters.
 
 4. Example of adding a new model:
+
    ```yaml
    VanillaOpenAIFramework:
      - task: "ner"
@@ -85,9 +127,30 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
        init_kwargs:
          prompt: "Extract entities from: {text}"
          llm_model: "gpt-4o-mini"
-         llm_model_family: "openai"
+         llm_model_host: "openai"
          source_data_pickle_path: "data/ner.pkl"
+         api_delay_seconds: 13 # optional
+         description_path: "data/schema.json" # optional
    ```
+
+## 🔧 Framework Compatibility
+
+Each framework supports specific model hosts. The following table shows the compatibility between frameworks and model hosts:
+
+| Framework                 | OpenAI | Google | Ollama | Transformers |
+| ------------------------- | :----: | :----: | :----: | :----------: |
+| VanillaOpenAIFramework    |   ✅   |        |        |              |
+| VanillaGoogleFramework    |        |   ✅   |        |              |
+| VanillaOllamaFramework    |        |        |   ✅   |              |
+| InstructorFramework       |   ✅   |        |        |              |
+| MirascopeFramework        |   ✅   |        |        |              |
+| MarvinFramework           |   ✅   |        |   ✅   |              |
+| LlamaIndexFramework       |   ✅   |        |   ✅   |              |
+| LMFormatEnforcerFramework |        |        |        |      ✅      |
+
+If an incompatible framework and model host are defined in the `config.py` and the benchmark is executed,
+they will be filtered through `config/config_checker` and `config/framework_compatibility.yaml`.
+These safeguards are in place to allow for easy updates in the future, so please avoid modifying the files under the `config` folder.
 
 ## 🧪 NER Benchmark methodology
 
@@ -99,10 +162,10 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
 - **Prompt**: `Extract and resolve a list of entities from the following text: {text}`
 - **Evaluation Metrics**:
   1. Reliability: The percentage of times the framework returns valid labels without errors. The average of all the rows `percent_successful` values.
-  1. Latency: The 95th percentile of the time taken to run the framework on the data.
-  1. Precision: The micro average of the precision of the framework on the data.
-  1. Recall: The micro average of the recall of the framework on the data.
-  1. F1 Score: The micro average of the F1 score of the framework on the data.
+  2. Latency: The 95th percentile of the time taken to run the framework on the data.
+  3. Precision: The micro average of the precision of the framework on the data.
+  4. Recall: The micro average of the recall of the framework on the data.
+  5. F1 Score: The micro average of the F1 score of the framework on the data.
 - **Experiment Details**: Run each row through the framework `n_runs` number of times and log the percent of successful runs for each row.
 
 ## 📊 Adding new data
@@ -110,7 +173,7 @@ The benchmark is configured using a YAML file (default: `config.yaml`). Here's h
 1. Create a new pandas dataframe pickle file with the following columns:
    - `text`: The text to be sent to the framework
    - `labels`: List of labels associated with the text
-   - See `data/multilabel_classification.pkl` for an example.
+   - See `data/ner.pkl` for an example.
 2. Add the path to the new pickle file in the `./config.yaml` file under the `source_data_pickle_path` key for all the frameworks you want to test.
 3. Run the benchmark using `python -m main run-benchmark` to test the new data on all the frameworks!
 4. Generate the results using `python -m main generate-results`
@@ -124,7 +187,7 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 3. The class should define an `init` method that initializes the base class. Here are the arguments the base class expects:
    - `prompt` (str): Prompt template used. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `llm_model` (str): LLM model to be used. Obtained from the `init_kwargs` in the `./config.yaml` file.
-   - `llm_model_family` (str): LLM model family to be used. Current supported values as `"openai"` and `"transformers"`. Obtained from the `init_kwargs` in the `./config.yaml` file.
+   - `llm_model_host` (str): LLM model host to be used. Current supported values as `"openai"` and `"transformers"`. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `retries` (int): Number of retries for the framework. Default is $0$. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `source_data_picke_path` (str): Path to the source data pickle file. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `sample_rows` (int): Number of rows to sample from the source data. Useful for testing on a smaller subset of data. Default is $0$ which uses all rows in source_data_pickle_path for the benchmarking. Obtained from the `init_kwargs` in the `./config.yaml` file.
@@ -146,12 +209,6 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 1. Framework related tasks:
    | Framework | Named Entity Recognition |
    |-----------------------------------------------------------------------------------------------------|:--------------------------:|
-   | [OpenAI Structured Output](https://github.com/openai/openai-python) | ✅ OpenAI |
-   | [Instructor](https://github.com/jxnl/instructor) | ✅ OpenAI |
-   | [Mirascope](https://github.com/mirascope/mirascope) | ✅ OpenAI |
-   | [Marvin](https://github.com/PrefectHQ/marvin) | ✅ OpenAI |
-   | [Llamaindex](https://docs.llamaindex.ai/en/stable/examples/output_parsing/openai_pydantic_program/) | ✅ OpenAI |
-   | [LM format enforcer](https://github.com/noamgat/lm-format-enforcer) | ✅ HF Transformers |
    | [Jsonformer](https://github.com/1rgs/jsonformer) | 💭 Planning |
    | [Guidance](https://github.com/guidance-ai/guidance) | 💭 Planning |
    | [DsPy](https://dspy-docs.vercel.app/docs/building-blocks/typed_predictors) | 💭 Planning |

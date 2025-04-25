@@ -4,14 +4,29 @@ from typing import Any, Optional, Type
 
 from pydantic import BaseModel, create_model, field_validator
 from pydantic_core import PydanticUndefined
+from pydantic.fields import Field
 
 
-def ner_model(ner_entities):
-    fields = {name: (Optional[list[str]], None) for name in ner_entities}
-
+def ner_model(ner_entities, descriptions=None):
+    """
+    Create a Pydantic model for Named Entity Recognition with optional descriptions.
+    
+    Args:
+        ner_entities: List of entity names
+        descriptions: Optional dictionary mapping entity names to their descriptions
+    
+    Returns:
+        A Pydantic model class with the specified entities as fields
+    """
+    descriptions = descriptions or {}
+    fields = {}
+    
+    for name in ner_entities:
+        description = descriptions.get(name, f"A list of {name} entities")
+        fields[name] = (Optional[list[str]], Field(default=None, description=description))
     NER = create_model("NER", **fields)
 
-    return NER
+    return NER 
 
 def pydantic_to_dataclass(
     klass: Type[BaseModel],
