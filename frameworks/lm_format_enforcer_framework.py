@@ -16,7 +16,7 @@ class LMFormatEnforcerFramework(BaseFramework):
         self.parser = JsonSchemaParser(self.response_model.schema())
         max_length = kwargs.get("max_length", 4096)
 
-        if self.llm_model_family == "transformers":
+        if self.llm_model_host == "transformers":
             self.hf_pipeline = pipeline(
                 "text-generation",
                 model=self.llm_model,
@@ -27,7 +27,7 @@ class LMFormatEnforcerFramework(BaseFramework):
                 self.hf_pipeline.tokenizer, self.parser
             )
         else:
-            raise ValueError(f"Model family: {self.llm_model_family} not supported")
+            raise ValueError(f"Model host: {self.llm_model_host} not supported")
 
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}
