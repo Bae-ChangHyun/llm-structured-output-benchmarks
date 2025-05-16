@@ -114,18 +114,18 @@ def run_benchmark(
 
             results[config_key] = run_results
 
-            results_path = f"results/{results_path}"
-            os.makedirs(results_path, exist_ok=True)
-            shutil.copy(config_path, f"{results_path}/{config_key}.yaml")
+            final_results_path = f"results/{results_path}"
+            os.makedirs(final_results_path, exist_ok=True)
+            shutil.copy(config_path, f"{final_results_path}/{config_key}.yaml")
             
             # 프레임워크 이름에 모델 이름 추가
             model_name = config["init_kwargs"].get("llm_model", "unknown")
             key_with_model = f"{config_key}_{model_name}"
             
             # 모델 이름이 포함된 키로 결과 저장
-            with open(f"{results_path}/{key_with_model}.pkl", "wb") as file:
+            with open(f"{final_results_path}/{key_with_model}.pkl", "wb") as file:
                 pickle.dump({key_with_model: run_results}, file)
-                logger.info(f"Results saved to {results_path}/{key_with_model}.pkl")
+                logger.info(f"Results saved to {final_results_path}/{key_with_model}.pkl")
 
 @app.command(help="벤치마크 결과 분석: 저장된 벤치마크 결과를 로드하여 성능 지표를 분석하고 비교 테이블을 출력합니다.")
 def show_results(
