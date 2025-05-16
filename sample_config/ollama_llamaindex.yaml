@@ -1,0 +1,51 @@
+LlamaIndexFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:30b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:8b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:14b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:27b-it-qat_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "phi4-reasoning:14b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
