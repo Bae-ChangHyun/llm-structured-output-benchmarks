@@ -139,10 +139,10 @@ Each framework supports specific model hosts. The following table shows the comp
 
 | Framework                 | OpenAI | Google | Ollama | Transformers |
 | ------------------------- | :----: | :----: | :----: | :----------: |
-| VanillaOpenAIFramework    |   ✅   |        |        |              |
+| VanillaOpenAIFramework    |   ✅   |        |   ✅   |              |
 | VanillaGoogleFramework    |        |   ✅   |        |              |
 | VanillaOllamaFramework    |        |        |   ✅   |              |
-| InstructorFramework       |   ✅   |        |        |              |
+| InstructorFramework       |   ✅   |   ✅   |   ✅   |              |
 | MirascopeFramework        |   ✅   |        |        |              |
 | MarvinFramework           |   ✅   |        |   ✅   |              |
 | LlamaIndexFramework       |   ✅   |        |   ✅   |              |
