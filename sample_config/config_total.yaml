@@ -1,0 +1,153 @@
+# https://ai.google.dev/gemini-api/docs/models?hl=ko
+# https://ai.google.dev/gemini-api/docs/rate-limits?hl=ko#free-tier
+
+VanillaGoogleFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemini-2.0-flash"
+      llm_model_host: "google"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 5
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemini-2.5-flash-preview-04-17"
+      llm_model_host: "google"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 7
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemini-2.5-pro-exp-03-25"
+      llm_model_host: "google"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 13
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemini-2.0-flash-lite"
+      llm_model_host: "google"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 3
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+# https://platform.openai.com/docs/pricing
+
+VanillaOpenAIFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "o4-mini-2025-04-16"
+      llm_model_host: "openai"
+      source_data_pickle_path: "data/resume_data.pkl"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gpt-4.1-nano-2025-04-14"
+      llm_model_host: "openai"
+      source_data_pickle_path: "data/resume_data.pkl"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gpt-4.1-mini-2025-04-14"
+      llm_model_host: "openai"
+      source_data_pickle_path: "data/resume_data.pkl"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gpt-4.1-2025-04-14"
+      llm_model_host: "openai"
+      source_data_pickle_path: "data/resume_data.pkl"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "o4-mini-2025-04-16"
+      llm_model_host: "openai"
+      source_data_pickle_path: "data/resume_data.pkl"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+VanillaOllamaFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:30b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:8b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "qwen3:14b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "phi4-reasoning:14b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "phi4-mini-reasoning:3.8b_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "gemma3:27b-it-qat_32768"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
