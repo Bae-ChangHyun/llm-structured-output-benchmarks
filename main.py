@@ -242,5 +242,35 @@ def show_results(
         logger.error(f"Failed to load ground truth labels from source data: {e}")
         raise typer.Exit(code=1)
 
+@app.command(help="Streamlit을 사용하여 예측 결과와 실제값 비교 시각화: 결과를 인터랙티브하게 시각화하고 분석합니다.")
+def visualize(
+    port: int = typer.Option(
+        8501,
+        "--port", "-p",
+        help="Streamlit 서버 포트 번호입니다.",
+    ),
+):
+    """Streamlit 앱을 실행하여 예측 결과와 실제값을 비교 시각화합니다."""
+    import subprocess
+    import sys
+    import os
+    
+    streamlit_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web_app.py")
+    
+    cmd = [
+        sys.executable, "-m", "streamlit", "run", 
+        streamlit_file,
+        "--server.port", str(port)
+    ]
+    
+    try:
+        logger.info(f"Streamlit 시각화 도구를 포트 {port}에서 시작합니다...")
+        subprocess.run(cmd)
+    except KeyboardInterrupt:
+        logger.info("Streamlit 앱이 종료되었습니다.")
+    except Exception as e:
+        logger.error(f"Streamlit 앱 실행 중 오류가 발생했습니다: {e}")
+        raise typer.Exit(code=1)
+
 if __name__ == "__main__":
     app()
