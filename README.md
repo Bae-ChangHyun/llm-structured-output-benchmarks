@@ -77,12 +77,17 @@ I would like to express gratitude to the original author for their contribution 
    ```
 
    - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses using the `--ground-truth` (`-g`) option.
-   - To compare multiple experiment results, specify multiple result directories using the `--result-path` (`-r`) option.
+   - To compare multiple experiment results, specify multiple result directories, if not specify default is `./results`.
+     `python -m main show-results {folder1} {folder2}`
    - Customize the sorting of evaluation metrics using the `--sort-by` (`-s`) option.
    - For detailed help, run:
      ```bash
      python -m main show-results --help
      ```
+
+   ```
+
+   ```
 
 6. **Get help on command-line arguments**  
    Add `--help` after any command to view detailed usage instructions.
@@ -144,7 +149,7 @@ Each framework supports specific model hosts. The following table shows the comp
 | VanillaOllamaFramework    |        |        |   ✅   |              |
 | InstructorFramework       |   ✅   |   ✅   |   ✅   |              |
 | MirascopeFramework        |   ✅   |        |        |              |
-| MarvinFramework           |   ✅   |        |   ✅   |              |
+| MarvinFramework           |   ✅   |        |        |              |
 | LlamaIndexFramework       |   ✅   |        |   ✅   |              |
 | LMFormatEnforcerFramework |        |        |        |      ✅      |
 
@@ -203,6 +208,18 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 9. Add a new entry in the `./config.yaml` file with the name of the class as the key. The yaml entry can have the following fields
    - `n_runs`: number of times to repeat each text
    - `init_kwargs`: all the arguments that need to be passed to the `init` method of the class, including those mentioned in step 3 above.
+
+## Framework Reference
+
+1. [vanilla_openai](https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses)
+2. [vanilla_google](https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=python)
+3. [vanilla_ollama](https://ollama.com/blog/structured-outputs)
+4. [guradrails](https://github.com/guardrails-ai/guardrails)
+5. [instructor](https://python.useinstructor.com)
+6. [llamaindex](https://docs.llamaindex.ai/en/stable/examples/output_parsing/openai_pydantic_program/)
+7. lmformatenforcer
+8. marvin
+9. mirascope
 
 ## 🧭 Roadmap
 
