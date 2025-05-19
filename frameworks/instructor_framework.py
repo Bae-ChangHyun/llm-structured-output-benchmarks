@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from loguru import logger
 
 import instructor
 from openai import OpenAI
@@ -13,17 +14,23 @@ class InstructorFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         if self.llm_model_host == "openai":
-            self.instructor_client = instructor.from_openai(OpenAI())
+            self.instructor_client = instructor.from_openai(
+                client = OpenAI())
+            logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
         elif self.llm_model_host == "ollama":
-            self.instructor_client = instructor.from_openai(OpenAI(
+            self.instructor_client = instructor.from_openai(
+                cleint = OpenAI(
                 base_url = os.environ['OLLAMA_HOST'],
                 api_key = "ollama",
-            ),mode=instructor.Mode.JSON,)
+                ),
+                mode=instructor.Mode.JSON)
+            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
         elif self.llm_model_host == "google":
             self.instructor_client = instructor.from_gemini(
                 client=genai.GenerativeModel(model_name=self.llm_model),
-                mode=instructor.Mode.GEMINI_JSON,
+                mode=instructor.Mode.GEMINI_JSON
             )
+            logger.debug("Google 클라이언트가 초기화되었습니다.")
 
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}

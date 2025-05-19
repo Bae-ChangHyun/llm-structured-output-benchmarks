@@ -12,27 +12,21 @@ class VanillaOpenAIFramework(BaseFramework):
         super().__init__(*args, **kwargs)
         
         if self.llm_model_host == "openai":
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if not api_key:
-                logger.error("OPENAI_API_KEY is not set in the environment variables!")
-                raise ValueError("Export OEPN_API_KEY in your environment variables.")
-                
-            self.openai_client = OpenAI()
-        
-            logger.info("OpenAI 클라이언트가 초기화되었습니다.")
+            self.client = OpenAI()
+            logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
         elif self.llm_model_host == "ollama":
-            self.openai_client = OpenAI(
+            self.client = OpenAI(
                 base_url=os.environ['OLLAMA_HOST'],
                 api_key="ollama",
             )
-            logger.info("Ollama 클라이언트가 초기화되었습니다.")
+            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
 
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
         @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
-            response = self.openai_client.beta.chat.completions.parse(
+            response = self.client.beta.chat.completions.parse(
                 model=self.llm_model,
                 response_format=self.response_model,
                 messages=[

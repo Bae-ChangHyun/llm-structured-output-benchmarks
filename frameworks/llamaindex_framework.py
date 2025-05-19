@@ -14,23 +14,20 @@ class LlamaIndexFramework(BaseFramework):
         super().__init__(*args, **kwargs)
         
         if self.llm_model_host == "openai":
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if not api_key:
-                logger.error("OPENAI_API_KEY is not set in the environment variables!")
-                raise ValueError("Export OEPN_API_KEY in your environment variables.")
-                
-            self.openai_client = OpenAI()
+            self.client = OpenAI()
+            logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
         elif self.llm_model_host == "ollama":
-            self.openai_client = OpenAI(
+            self.client = OpenAI(
                 base_url=os.environ['OLLAMA_HOST'],
                 api_key="ollama",
             )
+            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
             
         # TODO: Swap the Program based on self.llm_model
         self.llamaindex_client = OpenAIPydanticProgram.from_defaults(
             output_cls=self.response_model,
             prompt_template_str=self.prompt,
-            llm_model=self.openai_client,
+            llm_model=self.client,
         )
 
     def run(
