@@ -2,6 +2,7 @@ import os
 import pickle
 import time
 from datetime import datetime
+import glob
 
 import pandas as pd
 import torch
@@ -134,10 +135,9 @@ def show_results(
         "--ground-truth", "-g",
         help="정답 라벨이 포함된 PKL 파일 경로. 지정하지 않으면 벤치마크 실행시 사용된 소스 데이터 경로에서 로드합니다.",
     ),
-    results_data_paths: list[str] = typer.Option(
+    results_data_paths: list[str] = typer.Argument(
         None,
-        "--results-path", "-r",
-        help="하나 이상의 결과 폴더 경로들. 복수 지정 가능: -r path1 -r path2",
+        help="하나 이상의 결과 폴더 경로들. 공백으로 구분하여 여러 경로 지정 가능: path1 path2 path3",
     ),
     sort_by: str = typer.Option(
         "f1",
@@ -146,11 +146,27 @@ def show_results(
     ),
 ):
     
-    # 결과 경로가 지정되지 않은 경우 기본값으로 오늘 날짜 폴더 사용
+    # 결과 경로가 지정되지 않은 경우 기본값으로 results 디렉토리의 모든 하위 폴더 사용
     if results_data_paths is None or len(results_data_paths) == 0:
-        default_path = f"results/{datetime.now().strftime('%Y-%m-%d')}"
-        results_data_paths = [default_path]
-        logger.info(f"결과 경로가 지정되지 않아 기본 경로를 사용합니다: {default_path}")
+        results_dir = "results"
+        if os.path.exists(results_dir) and os.path.isdir(results_dir):
+            # results 디렉토리 내의 모든 하위 디렉토리를 가져옴
+            subdirs = [os.path.join(results_dir, d) for d in os.listdir(results_dir) 
+                      if os.path.isdir(os.path.join(results_dir, d))]
+            
+            if subdirs:
+                results_data_paths = subdirs
+                logger.info(f"결과 경로가 지정되지 않아 results 디렉토리의 모든 하위 폴더를 사용합니다: {results_data_paths}")
+            else:
+                # 하위 디렉토리가 없으면 results 디렉토리 자체를 사용
+                results_data_paths = [results_dir]
+                logger.info(f"results 디렉토리에 하위 폴더가 없어 results 디렉토리 자체를 사용합니다.")
+    
+    # -r 옵션을 유지하기 위한 추가 코드 
+    # typer.Argument 대신 typer.Option을 사용하여 -r 옵션 지원
+    if len(results_data_paths) == 1 and ',' in results_data_paths[0]:
+        results_data_paths = [path.strip() for path in results_data_paths[0].split(',')]
+        logger.info(f"콤마로 구분된 경로를 분리하여 사용합니다: {results_data_paths}")
 
     # Combine results from different frameworks
     results = {}
@@ -249,6 +265,11 @@ def visualize(
         "--port", "-p",
         help="Streamlit 서버 포트 번호입니다.",
     ),
+    fix_arrow_error: bool = typer.Option(
+        True,
+        "--fix-arrow-error", "-f",
+        help="PyArrow 변환 오류를 방지하기 위해 혼합 타입 컬럼을 문자열로 변환합니다.",
+    ),
 ):
     """Streamlit 앱을 실행하여 예측 결과와 실제값을 비교 시각화합니다."""
     import subprocess
@@ -263,8 +284,14 @@ def visualize(
         "--server.port", str(port)
     ]
     
+    # 데이터 변환 플래그 추가
+    if fix_arrow_error:
+        cmd.extend(["--", "--fix-arrow-error"])
+    
     try:
         logger.info(f"Streamlit 시각화 도구를 포트 {port}에서 시작합니다...")
+        if fix_arrow_error:
+            logger.info("데이터 변환 오류 수정 활성화: 혼합 타입 컬럼을 문자열로 변환합니다.")
         subprocess.run(cmd)
     except KeyboardInterrupt:
         logger.info("Streamlit 앱이 종료되었습니다.")
