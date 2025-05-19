@@ -35,6 +35,7 @@ InstructorFramework:
 MirascopeFramework:
   hosts:
     - openai
+    - ollama
 
 LMFormatEnforcerFramework:
   hosts:
