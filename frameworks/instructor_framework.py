@@ -19,7 +19,7 @@ class InstructorFramework(BaseFramework):
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
         elif self.llm_model_host == "ollama":
             self.instructor_client = instructor.from_openai(
-                cleint = OpenAI(
+                client = OpenAI(
                 base_url = self.host,
                 api_key = "ollama",
                 ),
