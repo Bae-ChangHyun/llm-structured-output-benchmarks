@@ -5,6 +5,7 @@
 ### CUSTOM ###1
 .env
 results/
+data_sources/result
 
 ### Linux ###
 *~
