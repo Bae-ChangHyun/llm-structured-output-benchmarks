@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict
 import json
 
+from ollama._client import AsyncClient, Client
 from ollama import chat
 from loguru import logger
 
@@ -14,13 +15,16 @@ class VanillaOllamaFramework(BaseFramework):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.client = Client(self.host)
+
         
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
         @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
-            response = chat(
+            
+            response = self.client.chat(
                 model=self.llm_model,
                 format=self.response_model.model_json_schema(),
                 messages=[

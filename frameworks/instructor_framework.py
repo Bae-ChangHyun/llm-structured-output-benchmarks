@@ -20,7 +20,7 @@ class InstructorFramework(BaseFramework):
         elif self.llm_model_host == "ollama":
             self.instructor_client = instructor.from_openai(
                 cleint = OpenAI(
-                base_url = os.environ['OLLAMA_HOST'],
+                base_url = self.host,
                 api_key = "ollama",
                 ),
                 mode=instructor.Mode.JSON)
