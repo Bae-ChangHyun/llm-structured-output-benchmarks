@@ -46,7 +46,11 @@ def reliability_metric(percent_successful: dict[str, list[float]], model_hosts=N
             
         frameworks.append(framework)
         models.append(model_display)
-        reliabilities.append(np.mean(values))
+        # 빈 배열 체크 추가
+        if len(values) > 0:
+            reliabilities.append(np.mean(values))
+        else:
+            reliabilities.append(0.0)  # 빈 배열인 경우 0으로 처리
     
     # 데이터프레임 생성 (프레임워크와 모델을 별도 컬럼으로)
     reliability_df = pd.DataFrame({
@@ -82,11 +86,14 @@ def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, mode
         model_host = model_hosts.get(key, {}).get("host", "unknown")
 
         model_display = f"{model}({model_host})"
-
             
         frameworks.append(framework)
         models.append(model_display)
-        latency_values.append(np.percentile(values, percentile))
+        # 빈 배열 체크 추가
+        if len(values) > 0:
+            latency_values.append(np.percentile(values, percentile))
+        else:
+            latency_values.append(0.0)  # 빈 배열인 경우 0으로 처리
     
     # 데이터프레임 생성 (프레임워크와 모델을 별도 컬럼으로)
     latency_df = pd.DataFrame({
@@ -124,8 +131,26 @@ def ner_micro_metrics(results: dict[str, dict], ground_truths=None):
         tp_total, fp_total, fn_total = 0, 0, 0
         predictions = values["predictions"]
         
+        # predictions가 비어 있는지 확인
+        if not predictions or not ground_truths:
+            # 빈 예측 결과 처리
+            framework_name, model_name = format_framework_name(framework)
+            model_host = values.get("llm_model_host", "unknown")
+            model_display = f"{model_name}({model_host})"
+            
+            micro_metrics["Framework"].append(framework_name)
+            micro_metrics["Model(host)"].append(model_display)
+            micro_metrics["micro_precision"].append(0.0)
+            micro_metrics["micro_recall"].append(0.0)
+            micro_metrics["micro_f1"].append(0.0)
+            continue
+        
         # 각 예측마다 true positives, false positives, false negatives 계산
         for i, pred_runs in enumerate(predictions):
+            # i가 ground_truths의 범위를 벗어나지 않는지 확인
+            if i >= len(ground_truths):
+                continue
+                
             truth = ground_truths[i]
             
             # 각 실행마다 집계
@@ -185,14 +210,27 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
     Returns:
         pd.DataFrame: 모든 지표가 포함된 데이터프레임
     """
+    # 결과가 비어있는지 확인
+    if not results:
+        return pd.DataFrame(columns=["Framework", "Model(host)", "micro_precision", "micro_recall", 
+                                   "micro_f1", "Reliability", "Latency"])
+    
+    # ground_truths가 None인지 확인
+    if ground_truths is None:
+        # 여기서 ground_truths가 필요한 경우의 처리
+        # 예를 들어, 각 프레임워크의 results에서 정답을 가져올 수 있다면:
+        # ground_truths = next(iter(results.values())).get("ground_truth", [])
+        # 아니면 빈 리스트로 처리:
+        ground_truths = []
+    
     # 데이터 준비
     percent_successful = {
-        framework: value["percent_successful"]
+        framework: value.get("percent_successful", [])
         for framework, value in results.items()
     }
     
     latencies = {
-        framework: value["latencies"]
+        framework: value.get("latencies", [])
         for framework, value in results.items()
     }
     
@@ -204,45 +242,65 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
             "host": value.get("llm_model_host", "unknown")
         }
     
-    # 각 지표 계산
-    ner_df = ner_micro_metrics(results, ground_truths)
-    reliability_df = reliability_metric(percent_successful, model_hosts)
-    latency_df = latency_metric(latencies, percentile, model_hosts)
+    try:
+        # 각 지표 계산
+        ner_df = ner_micro_metrics(results, ground_truths)
+        reliability_df = reliability_metric(percent_successful, model_hosts)
+        latency_df = latency_metric(latencies, percentile, model_hosts)
+        
+        # 데이터프레임이 비어있는지 확인
+        if ner_df.empty or reliability_df.empty or latency_df.empty:
+            print("경고: 하나 이상의 지표 데이터프레임이 비어 있습니다.")
+        
+        # 데이터프레임 병합
+        combined_df = ner_df.merge(
+            reliability_df, on=["Framework", "Model(host)"], how="outer"
+        ).merge(
+            latency_df, on=["Framework", "Model(host)"], how="outer"
+        )
+        
+        # 컬럼명 정리
+        combined_df = combined_df.rename(columns={
+            f"Latency_p{percentile}(s)": "Latency"
+        })
+        
+        # 누락된 값 처리
+        combined_df = combined_df.fillna(0)
+        
+        # 숫자 반올림
+        numeric_cols = ["micro_precision", "micro_recall", "micro_f1", "Reliability", "Latency"]
+        for col in numeric_cols:
+            if col in combined_df.columns:
+                combined_df[col] = combined_df[col].round(3)
+        
+        # 사용자 정의 정렬 기준으로 정렬
+        sort_column = {
+            "f1": "micro_f1",
+            "micro_f1": "micro_f1",
+            "recall": "micro_recall",
+            "micro_recall": "micro_recall",
+            "precision": "micro_precision",
+            "micro_precision": "micro_precision",
+            "reliability": "Reliability",
+            "latency": "Latency"
+        }.get(sort_by.lower(), "micro_f1")
+        
+        # sort_column이 존재하는지 확인
+        if sort_column in combined_df.columns:
+            # 지연 시간은 낮을수록 좋으므로 오름차순 정렬, 나머지는 내림차순 정렬
+            ascending = (sort_column == "Latency")
+            combined_df = combined_df.sort_values(by=sort_column, ascending=ascending)
+        else:
+            print(f"경고: 정렬 컬럼 '{sort_column}'이 데이터프레임에 존재하지 않습니다.")
+        
+        # 인덱스 재설정 (인덱스를 순차적으로 새로 부여하고 인덱스 컬럼 제거)
+        combined_df = combined_df.reset_index(drop=True)
+        
+        return combined_df
     
-    # 데이터프레임 병합
-    combined_df = ner_df.merge(
-        reliability_df, on=["Framework", "Model(host)"], how="outer"
-    ).merge(
-        latency_df, on=["Framework", "Model(host)"], how="outer"
-    )
-    
-    # 컬럼명 정리
-    combined_df = combined_df.rename(columns={
-        f"Latency_p{percentile}(s)": "Latency"
-    })
-    
-    # 숫자 반올림
-    numeric_cols = ["micro_precision", "micro_recall", "micro_f1", "Reliability", "Latency"]
-    combined_df[numeric_cols] = combined_df[numeric_cols].round(3)
-    
-    # 사용자 정의 정렬 기준으로 정렬
-    sort_column = {
-        "f1": "micro_f1",
-        "micro_f1": "micro_f1",
-        "recall": "micro_recall",
-        "micro_recall": "micro_recall",
-        "precision": "micro_precision",
-        "micro_precision": "micro_precision",
-        "reliability": "Reliability",
-        "latency": "Latency"
-    }.get(sort_by.lower(), "micro_f1")
-    
-    # 지연 시간은 낮을수록 좋으므로 오름차순 정렬, 나머지는 내림차순 정렬
-    ascending = (sort_column == "Latency")
-    
-    combined_df = combined_df.sort_values(by=sort_column, ascending=ascending)
-    
-    # 인덱스 재설정 (인덱스를 순차적으로 새로 부여하고 인덱스 컬럼 제거)
-    combined_df = combined_df.reset_index(drop=True)
-    
-    return combined_df
+    except Exception as e:
+        print(f"combined_metrics 함수 실행 중 오류 발생: {e}")
+        # 오류 발생시 빈 데이터프레임 반환
+        return pd.DataFrame(columns=["Framework", "Model(host)", "micro_precision", "micro_recall", 
+                                   "micro_f1", "Reliability", "Latency"])
+

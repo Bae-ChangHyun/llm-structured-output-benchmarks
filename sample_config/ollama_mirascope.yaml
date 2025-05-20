@@ -1,0 +1,56 @@
+MirascopeFramework:
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "hf.co/Qwen/Qwen3-30B-A3B-GGUF:Q4_K_M"
+      llm_model_alias: "Qwen3-30B:Q4_K_M"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "hf.co/Qwen/Qwen3-14B-GGUF:Q8_0"
+      llm_model_alias: "Qwen3-14B-GGUF:Q8_0"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "hf.co/Qwen/Qwen3-14B-GGUF:Q4_K_M"
+      llm_model_alias: "Qwen3-14B:Q4_K_M"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "hf.co/google/gemma-3-27b-it-qat-q4_0-gguf:Q4_0"
+      llm_model_alias: "gemma-3-27b-it-qat-q4_0-gguf:Q4_0"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://localhost:11434/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "Qwen/Qwen3-32B-AWQ"
+      llm_model_alias: "Qwen3-32B-AWQ"
+      llm_model_host: "ollama"
+      source_data_pickle_path: "data/resume_data.pkl"
+      host: "http://118.38.20.101:8000/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+

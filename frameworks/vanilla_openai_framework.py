@@ -11,27 +11,29 @@ class VanillaOpenAIFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            logger.error("OPENAI_API_KEY is not set in the environment variables!")
-            raise ValueError("Export OEPN_API_KEY in your environment variables.")
-            
-        self.openai_client = OpenAI()
-        
-        logger.info("OpenAI 클라이언트가 초기화되었습니다.")
+        if self.llm_model_host == "openai":
+            self.client = OpenAI()
+            logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
+        elif self.llm_model_host == "ollama":
+            self.client = OpenAI(
+                base_url=self.host,
+                api_key="ollama",
+            )
+            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
 
     def run(
         self, n_runs: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
         @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
-            response = self.openai_client.beta.chat.completions.parse(
+            response = self.client.beta.chat.completions.parse(
                 model=self.llm_model,
                 response_format=self.response_model,
                 messages=[
                     {"role": "user", "content": self.prompt.format(**inputs)}
                 ],
             )
+            logger.debug(f"예측 결과: {response.choices[0].message.parsed}")
             return response.choices[0].message.parsed
 
         predictions, percent_successful, metrics, latencies = run_experiment(inputs)

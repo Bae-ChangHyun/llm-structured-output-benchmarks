@@ -1,10 +1,13 @@
 import re
+import os
 from typing import Any, Type
 
 from mirascope.core import openai, prompt_template
-from mirascope.integrations.tenacity import collect_errors
+from mirascope.retries.tenacity import collect_errors 
 from pydantic import ValidationError
 from tenacity import retry, stop_after_attempt
+from openai import OpenAI
+from loguru import logger
 
 from frameworks.base import BaseFramework, experiment
 
@@ -12,13 +15,23 @@ from frameworks.base import BaseFramework, experiment
 class MirascopeFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        
+        if self.llm_model_host == "openai":
+            self.client = OpenAI()
+            logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
+        elif self.llm_model_host == "ollama":
+            self.client = OpenAI(
+                base_url=self.host,
+                api_key="ollama",
+            )
+            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
 
         # Identify all the input fields in the prompt and create the pydantic model
         # prompt_fields = re.findall(r"\{(.*?)\}", self.prompt)
 
     def mirascope_client(self, errors: list[ValidationError] | None = None, **kwargs):
         @retry(stop=stop_after_attempt(2), after=collect_errors(ValidationError))
-        @openai.call(self.llm_model, response_model=self.response_model)
+        @openai.call(self.llm_model, response_model=self.response_model, client = self.client)
         @prompt_template("{previous_errors}\n\n" + self.prompt)
         def decorated_method(errors, **kwargs):
             return self._mirascope_client(errors, **kwargs)

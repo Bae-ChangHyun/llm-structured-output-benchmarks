@@ -1,3 +1,4 @@
+import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, is_dataclass
@@ -143,6 +144,7 @@ class BaseFramework(ABC):
         self.prompt = kwargs.get("prompt", "")
         self.llm_model = kwargs.get("llm_model", "gpt-3.5-turbo")
         self.llm_model_host = kwargs.get("llm_model_host", "openai")
+        self.host = kwargs.get("host", os.environ.get("OLLAMA_HOST", ""))
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
