@@ -55,78 +55,80 @@ def run_benchmark(
         configs = yaml.safe_load(file)
 
     for config_key, config_values in configs.items():
-        results = {}
-        for config in config_values:
-            results[config_key] = {}
-            n_runs = config["n_runs"]
-            run_results = {
-                "predictions": [],
-                "percent_successful": [],
-                "latencies": [],
-                "llm_model": config["init_kwargs"].get("llm_model", "unknown"),  # 모델 정보 저장
-                "llm_model_host": config["init_kwargs"].get("llm_model_host", "unknown"),  # 모델 패밀리 정보 저장
-                "source_data_path": config["init_kwargs"].get("source_data_pickle_path", ""),  # 소스 데이터 경로 저장
-            }
+            results = {}
+            for config in config_values:
+                results[config_key] = {}
+                n_runs = config["n_runs"]
+                run_results = {
+                    "predictions": [],
+                    "percent_successful": [],
+                    "latencies": [],
+                    "llm_model": config["init_kwargs"].get("llm_model", "unknown"),  # 실제 모델 정보 저장
+                    "llm_model_alias": config["init_kwargs"].get("llm_model_alias", ""),  # 모델 별칭 저장
+                    "llm_model_host": config["init_kwargs"].get("llm_model_host", "unknown"),  # 모델 패밀리 정보 저장
+                    "source_data_path": config["init_kwargs"].get("source_data_pickle_path", ""),  # 소스 데이터 경로 저장
+                }
 
-            framework_instance = factory(
-                config_key, device=device, **config["init_kwargs"]
-            )
-            logger.info(f"Using {type(framework_instance)}")
-            
-            # API 지연 시간 설정 확인(for free API)
-            api_delay_seconds = config["init_kwargs"].get("api_delay_seconds", 0)
-            is_first_sample = True
+                framework_instance = factory(
+                    config_key, device=device, **config["init_kwargs"]
+                )
+                logger.info(f"Using {type(framework_instance)}")
+                
+                # API 지연 시간 설정 확인(for free API)
+                api_delay_seconds = config["init_kwargs"].get("api_delay_seconds", 0)
+                is_first_sample = True
 
-            if isinstance(framework_instance.source_data, pd.DataFrame):
-                for row in tqdm(
-                    framework_instance.source_data.itertuples(),
-                    desc=f"Running NER benchmark",
-                    total=len(framework_instance.source_data),
-                ):
-                    if not is_first_sample and api_delay_seconds > 0:
-                        time.sleep(api_delay_seconds)
-                    else:
-                        is_first_sample = False
-                        
-                    if isinstance(row.labels, list):
-                        labels = set(row.labels)
-                    else:
-                        labels = row.labels
+                if isinstance(framework_instance.source_data, pd.DataFrame):
+                    for row in tqdm(
+                        framework_instance.source_data.itertuples(),
+                        desc=f"Running NER benchmark",
+                        total=len(framework_instance.source_data),
+                    ):
+                        if not is_first_sample and api_delay_seconds > 0:
+                            time.sleep(api_delay_seconds)
+                        else:
+                            is_first_sample = False
+                            
+                        if isinstance(row.labels, list):
+                            labels = set(row.labels)
+                        else:
+                            labels = row.labels
 
+                        predictions, percent_successful, _, latencies = (
+                            framework_instance.run(
+                                inputs={"text": row.text},
+                                n_runs=n_runs,
+                                expected_response=labels,
+                            )
+                        )
+                        run_results["predictions"].append(predictions)
+                        run_results["percent_successful"].append(percent_successful)
+                        run_results["latencies"].append(latencies)
+                else:
                     predictions, percent_successful, _, latencies = (
                         framework_instance.run(
-                            inputs={"text": row.text},
                             n_runs=n_runs,
-                            expected_response=labels,
                         )
                     )
                     run_results["predictions"].append(predictions)
                     run_results["percent_successful"].append(percent_successful)
                     run_results["latencies"].append(latencies)
-            else:
-                predictions, percent_successful, _, latencies = (
-                    framework_instance.run(
-                        n_runs=n_runs,
-                    )
-                )
-                run_results["predictions"].append(predictions)
-                run_results["percent_successful"].append(percent_successful)
-                run_results["latencies"].append(latencies)
 
-            results[config_key] = run_results
+                results[config_key] = run_results
 
-            final_results_path = f"results/{results_path}"
-            os.makedirs(final_results_path, exist_ok=True)
-            shutil.copy(config_path, f"{final_results_path}/{config_key}.yaml")
-            
-            # 프레임워크 이름에 모델 이름 추가
-            model_name = config["init_kwargs"].get("llm_model", "unknown")
-            key_with_model = f"{config_key}_{model_name}"
-            
-            # 모델 이름이 포함된 키로 결과 저장
-            with open(f"{final_results_path}/{key_with_model}.pkl", "wb") as file:
-                pickle.dump({key_with_model: run_results}, file)
-                logger.info(f"Results saved to {final_results_path}/{key_with_model}.pkl")
+                final_results_path = f"results/{results_path}"
+                os.makedirs(final_results_path, exist_ok=True)
+                shutil.copy(config_path, f"{final_results_path}/{config_key}.yaml")
+                
+                # llm_model_alias를 우선 사용하고, 없으면 llm_model 사용
+                model_name = config["init_kwargs"].get("llm_model_alias", 
+                                                    config["init_kwargs"].get("llm_model", "unknown"))
+                key_with_model = f"{config_key}_{model_name}"
+                
+                # 모델 이름이 포함된 키로 결과 저장
+                with open(f"{final_results_path}/{key_with_model}.pkl", "wb") as file:
+                    pickle.dump({key_with_model: run_results}, file)
+                    logger.info(f"Results saved to {final_results_path}/{key_with_model}.pkl")
 
 @app.command(help="벤치마크 결과 분석: 저장된 벤치마크 결과를 로드하여 성능 지표를 분석하고 비교 테이블을 출력합니다.")
 def show_results(
@@ -192,6 +194,7 @@ def show_results(
                             # 모델 정보를 framework_model_info에 저장
                             framework_model_info[key] = {
                                 "model": value["llm_model"] if "llm_model" in value else "unknown",
+                                "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
                                 "host": value.get("llm_model_host", "unknown")
                             }
                             # 소스 데이터 경로 저장
@@ -212,7 +215,9 @@ def show_results(
     logger.info(f"총 {len(results)} 개의 모델 결과 로드됨")
     logger.info("Framework and Model Information:")
     for framework, info in framework_model_info.items():
-        logger.info(f"{framework}: Model = {info['model']}({info['host']})")
+        # llm_model_alias가 있으면 사용하고, 없거나 빈 문자열이면 llm_model 사용
+        display_model = info["alias"] if info.get("alias") else info["model"]
+        logger.info(f"{framework}: Model = {display_model}({info['host']})")
     
     # --ground-truth 옵션이 지정된 경우
     if ground_truth_path:
