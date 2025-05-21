@@ -8,6 +8,7 @@ VanillaGoogleFramework:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.5-flash-preview-05-20"
       llm_model_host: "google"
+      host : "https://generativelanguage.googleapis.com/v1beta/openai/"
       source_data_pickle_path: "data/resume_data.pkl"
       api_delay_seconds: 5
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
@@ -18,6 +19,7 @@ VanillaGoogleFramework:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash"
       llm_model_host: "google"
+      host: "https://generativelanguage.googleapis.com/v1beta/openai/"
       source_data_pickle_path: "data/resume_data.pkl"
       api_delay_seconds: 5
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
@@ -28,6 +30,7 @@ VanillaGoogleFramework:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.5-flash-preview-04-17"
       llm_model_host: "google"
+      host: "https://generativelanguage.googleapis.com/v1beta/openai/"
       source_data_pickle_path: "data/resume_data.pkl"
       api_delay_seconds: 7
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
@@ -38,6 +41,7 @@ VanillaGoogleFramework:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash-lite"
       llm_model_host: "google"
+      host: "https://generativelanguage.googleapis.com/v1beta/openai/"
       source_data_pickle_path: "data/resume_data.pkl"
       api_delay_seconds: 3
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
@@ -48,6 +52,7 @@ VanillaGoogleFramework:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash-thinking-exp-01-21"
       llm_model_host: "google"
+      host: "https://generativelanguage.googleapis.com/v1beta/openai/"
       source_data_pickle_path: "data/resume_data.pkl"
       api_delay_seconds: 3
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
