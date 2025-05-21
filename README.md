@@ -76,7 +76,7 @@ I would like to express gratitude to the original author for their contribution 
    python -m main show-results
    ```
 
-   - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses using the `--ground-truth` (`-g`) option.
+   - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses. JUst using the `--ground-truth` (`-g`) option.
    - To compare multiple experiment results, specify multiple result directories, if not specify default is `./results`.
      `python -m main show-results {folder1} {folder2}`
    - Customize the sorting of evaluation metrics using the `--sort-by` (`-s`) option.
@@ -84,10 +84,6 @@ I would like to express gratitude to the original author for their contribution 
      ```bash
      python -m main show-results --help
      ```
-
-   ```
-
-   ```
 
 6. **Get help on command-line arguments**  
    Add `--help` after any command to view detailed usage instructions.
@@ -108,9 +104,11 @@ Here's how to set up your configuration:
        n_runs: 10 # Number of runs per sample
        init_kwargs: # Framework initialization parameters
          prompt: "Your prompt template with {text} placeholder"
-         llm_model: "model-name"
-         llm_model_host: "openai|google|ollama|transformers"
-         source_data_pickle_path: "data/your_dataset.pkl"
+         llm_model: # model name
+         llm_model_alias: # model alias for show results
+         llm_model_host: # openai / google / ollama / transformers
+         host: # models base_url for openai compatibel
+         source_data_pickle_path: # ground truth dataset
          # Additional framework-specific parameters
    ```
 
@@ -144,13 +142,13 @@ Each framework supports specific model hosts. The following table shows the comp
 
 | Framework                 | OpenAI | Google | Ollama | Transformers |
 | ------------------------- | :----: | :----: | :----: | :----------: |
-| VanillaOpenAIFramework    |   ✅   |        |   ✅   |              |
+| VanillaOpenAIFramework    |   ✅   |   ✅   |   ✅   |              |
 | VanillaGoogleFramework    |        |   ✅   |        |              |
 | VanillaOllamaFramework    |        |        |   ✅   |              |
 | InstructorFramework       |   ✅   |   ✅   |   ✅   |              |
-| MirascopeFramework        |   ✅   |        |        |              |
+| MirascopeFramework        |   ✅   |   ✅   |        |              |
 | MarvinFramework           |   ✅   |        |        |              |
-| LlamaIndexFramework       |   ✅   |        |   ✅   |              |
+| LlamaIndexFramework       |   ✅   |   ✅   |   ✅   |              |
 | LMFormatEnforcerFramework |        |        |        |      ✅      |
 
 If an incompatible framework and model host are defined in the `config.py` and the benchmark is executed,
