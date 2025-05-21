@@ -19,12 +19,18 @@ class MirascopeFramework(BaseFramework):
         if self.llm_model_host == "openai":
             self.client = OpenAI()
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
-        elif self.llm_model_host == "ollama":
+        # elif self.llm_model_host == "ollama":
+        #     self.client = OpenAI(
+        #         base_url=self.host,
+        #         api_key="ollama",
+        #     )
+        #     logger.debug("Ollama 클라이언트가 초기화되었습니다.")
+        elif self.llm_model_host == "google":
             self.client = OpenAI(
                 base_url=self.host,
-                api_key="ollama",
+                api_key=os.getenv("GOOGLE_API_KEY"),
             )
-            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
+            logger.debug("Google 클라이언트가 초기화되었습니다.")
 
         # Identify all the input fields in the prompt and create the pydantic model
         # prompt_fields = re.findall(r"\{(.*?)\}", self.prompt)
