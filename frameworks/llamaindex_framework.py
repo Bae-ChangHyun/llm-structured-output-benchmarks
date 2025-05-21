@@ -22,6 +22,12 @@ class LlamaIndexFramework(BaseFramework):
                 api_key="ollama",
             )
             logger.debug("Ollama 클라이언트가 초기화되었습니다.")
+        elif self.llm_model_host == "google":
+            self.client = OpenAI(
+                base_url=self.host,
+                api_key=os.getenv("GOOGLE_API_KEY"),
+            )
+            logger.debug("Google 클라이언트가 초기화되었습니다.")
             
         # TODO: Swap the Program based on self.llm_model
         self.llamaindex_client = OpenAIPydanticProgram.from_defaults(
