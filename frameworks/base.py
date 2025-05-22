@@ -131,7 +131,8 @@ def experiment(
 class BaseFramework(ABC):
     prompt: str
     llm_model: str
-    llm_model_host: str
+    llm_provider: str
+    base_url: str
     retries: int
     source_data_pickle_path: str
     sample_rows: int
@@ -143,8 +144,8 @@ class BaseFramework(ABC):
     def __init__(self, *args, **kwargs) -> None:
         self.prompt = kwargs.get("prompt", "")
         self.llm_model = kwargs.get("llm_model", "gpt-3.5-turbo")
-        self.llm_model_host = kwargs.get("llm_model_host", "openai")
-        self.host = kwargs.get("host", os.environ.get("OLLAMA_HOST", ""))
+        self.llm_provider = kwargs.get("llm_provider", "openai")
+        self.base_url = kwargs.get("base_url", os.environ.get("OLLAMA_HOST", ""))
         self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
@@ -152,7 +153,7 @@ class BaseFramework(ABC):
 
         # Check framework compatibility with model host
         framework_name = self.__class__.__name__
-        compatibility_checker.check_compatibility(framework_name, self.llm_model_host)
+        compatibility_checker.check_compatibility(framework_name, self.llm_provider)
         
         source_data_pickle_path = kwargs.get("source_data_pickle_path", "")
 

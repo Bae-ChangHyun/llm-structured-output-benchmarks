@@ -12,6 +12,7 @@ VanillaOpenAIFramework:
     - openai
     - ollama
     - google
+    - vllm
 
 VanillaGoogleFramework:
   hosts:
@@ -27,12 +28,14 @@ LlamaIndexFramework:
     - openai
     - ollama
     - google
+    - vllm
 
 InstructorFramework:
   hosts:
     - openai
     - ollama
     - google
+    - vllm
 
 MirascopeFramework:
   hosts:

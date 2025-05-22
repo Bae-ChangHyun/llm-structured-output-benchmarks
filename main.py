@@ -39,7 +39,7 @@ def run_benchmark(
     ),
     results_path: str = typer.Option(
         f"results/{datetime.now().strftime('%Y-%m-%d')}",
-        "--results-path","-r",
+        "--results","-r",
         help="벤치마크 결과를 저장할 폴더명입니다. 기본값: 현재날짜 (results 하위)",
     ),
 ):
@@ -65,7 +65,7 @@ def run_benchmark(
                     "latencies": [],
                     "llm_model": config["init_kwargs"].get("llm_model", "unknown"),  # 실제 모델 정보 저장
                     "llm_model_alias": config["init_kwargs"].get("llm_model_alias", ""),  # 모델 별칭 저장
-                    "llm_model_host": config["init_kwargs"].get("llm_model_host", "unknown"),  # 모델 패밀리 정보 저장
+                    "llm_provider": config["init_kwargs"].get("llm_provider", "unknown"),  # 모델 패밀리 정보 저장
                     "source_data_path": config["init_kwargs"].get("source_data_pickle_path", ""),  # 소스 데이터 경로 저장
                 }
 
@@ -195,7 +195,7 @@ def show_results(
                             framework_model_info[key] = {
                                 "model": value["llm_model"] if "llm_model" in value else "unknown",
                                 "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
-                                "host": value.get("llm_model_host", "unknown")
+                                "host": value.get("llm_provider", "unknown")
                             }
                             # 소스 데이터 경로 저장
                             source_data_path = value.get("source_data_path", "")

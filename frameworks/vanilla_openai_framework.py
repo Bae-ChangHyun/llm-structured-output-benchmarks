@@ -11,16 +11,16 @@ class VanillaOpenAIFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
-        if self.llm_model_host == "openai":
+        if self.llm_provider == "openai":
             self.client = OpenAI()
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
-        elif self.llm_model_host == "ollama":
+        elif self.llm_provider == "ollama":
             self.client = OpenAI(
                 base_url=self.host,
                 api_key="ollama",
             )
             logger.debug("Ollama 클라이언트가 초기화되었습니다.")
-        elif self.llm_model_host == "google":
+        elif self.llm_provider == "google":
             self.client = OpenAI(
                 base_url=self.host,
                 api_key=os.getenv("GOOGLE_API_KEY"),
