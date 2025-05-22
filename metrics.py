@@ -135,7 +135,7 @@ def ner_micro_metrics(results: dict[str, dict], ground_truths=None):
         if not predictions or not ground_truths:
             # 빈 예측 결과 처리
             framework_name, model_name = format_framework_name(framework)
-            model_host = values.get("llm_model_host", "unknown")
+            model_host = values.get("llm_provider", "unknown")
             model_display = f"{model_name}({model_host})"
             
             micro_metrics["Framework"].append(framework_name)
@@ -186,7 +186,7 @@ def ner_micro_metrics(results: dict[str, dict], ground_truths=None):
         framework_name, model_name = format_framework_name(framework)
         
         # 모델 패밀리 정보가 있으면 추가
-        model_host = values.get("llm_model_host", "unknown")
+        model_host = values.get("llm_provider", "unknown")
         model_display = f"{model_name}({model_host})"
         
         micro_metrics["Framework"].append(framework_name)
@@ -239,7 +239,7 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
     for framework, value in results.items():
         model_hosts[framework] = {
             "model": value.get("llm_model", "unknown"),
-            "host": value.get("llm_model_host", "unknown")
+            "host": value.get("llm_provider", "unknown")
         }
     
     try:

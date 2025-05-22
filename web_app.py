@@ -85,7 +85,7 @@ def load_results():
                     for key, value in framework_results.items():
                         framework_model_info[key] = {
                             "model": value.get("llm_model", "unknown"),
-                            "host": value.get("llm_model_host", "unknown"),
+                            "host": value.get("llm_provider", "unknown"),
                             "source_data": value.get("source_data_path", ""),
                             "file_path": file_path  # 파일 경로 저장
                         }

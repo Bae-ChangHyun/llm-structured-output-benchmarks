@@ -1,12 +1,12 @@
 # https://platform.openai.com/docs/pricing
 
-LlamaIndexFramework:
+MirascopeFramework:
   - task: "ner"
     n_runs: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "o4-mini-2025-04-16"
-      llm_model_host: "openai"
+      llm_provider: "openai"
       source_data_pickle_path: "data/resume_data.pkl"
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
@@ -15,7 +15,7 @@ LlamaIndexFramework:
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gpt-4.1-nano-2025-04-14"
-      llm_model_host: "openai"
+      llm_provider: "openai"
       source_data_pickle_path: "data/resume_data.pkl"
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
@@ -24,7 +24,7 @@ LlamaIndexFramework:
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gpt-4o-mini-2024-07-18"
-      llm_model_host: "openai"
+      llm_provider: "openai"
       source_data_pickle_path: "data/resume_data.pkl"
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
   
@@ -33,6 +33,6 @@ LlamaIndexFramework:
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gpt-4.1-2025-04-14"
-      llm_model_host: "openai"
+      llm_provider: "openai"
       source_data_pickle_path: "data/resume_data.pkl"
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"

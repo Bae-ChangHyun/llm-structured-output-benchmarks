@@ -26,21 +26,21 @@ class GuardrailsFramework(BaseFramework):
         @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
             
-            if self.llm_model_host == "ollama":
+            if self.llm_provider == "ollama":
                 response = self.guard(
                     litellm.completion,
                     model=f"ollama/{self.llm_model}",
                     api_base = "http://localhost:11434",
                     messages=[{"role": "user", "content": self.prompt.format(**inputs)}],
                     )
-            elif self.llm_model_host == "openai":
+            elif self.llm_provider == "openai":
                 response = self.guard(
                     model=self.llm_model,
                     messages=[{"role": "user", "content": self.prompt.format(**inputs)}],
                     tools=self.guard.json_function_calling_tool([]),
                     tool_choice="required",
                 )
-            elif self.llm_model_host == "google":
+            elif self.llm_provider == "google":
                 response = self.guard(
                     model=f"gemini/{self.llm_model}",
                     messages=[{"role": "user", "content": self.prompt.format(**inputs)}],

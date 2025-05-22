@@ -13,11 +13,11 @@ class InstructorFramework(BaseFramework):
     # https://python.useinstructor.com
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        if self.llm_model_host == "openai":
+        if self.llm_provider == "openai":
             self.instructor_client = instructor.from_openai(
                 client = OpenAI())
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
-        elif self.llm_model_host == "ollama":
+        elif self.llm_provider == "ollama":
             self.instructor_client = instructor.from_openai(
                 client = OpenAI(
                 base_url = self.host,
@@ -25,7 +25,7 @@ class InstructorFramework(BaseFramework):
                 ),
                 mode=instructor.Mode.JSON)
             logger.debug("Ollama 클라이언트가 초기화되었습니다.")
-        elif self.llm_model_host == "google":
+        elif self.llm_provider == "google":
             self.instructor_client = instructor.from_gemini(
                 client=genai.GenerativeModel(model_name=self.llm_model),
                 mode=instructor.Mode.GEMINI_JSON
@@ -37,7 +37,7 @@ class InstructorFramework(BaseFramework):
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
         @experiment(n_runs=n_runs, expected_response=expected_response)
         def run_experiment(inputs):
-            if self.llm_model_host == "google":
+            if self.llm_provider == "google":
                 response = self.instructor_client.chat.completions.create(
                     response_model=self.response_model,
                     max_retries=self.retries,

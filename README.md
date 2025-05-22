@@ -46,7 +46,6 @@ I would like to express gratitude to the original author for their contribution 
    - Create a `.env` file in the root directory based on the provided `.env copy` template.
    - Fill in your API keys as follows:
      ```env
-     OLLAMA_HOST=your_ollama_host
      OPENAI_API_KEY=your_openai_key
      GOOGLE_API_KEY=your_google_key
      ```
@@ -54,6 +53,7 @@ I would like to express gratitude to the original author for their contribution 
 3. **Prepare your configuration file**
 
    - Write your own configuration file for the benchmark. Refer to the examples in the `sample_config` directory for guidance.
+     <br>
 
 4. **Run the benchmark**  
    Use the following command to execute the benchmark:
@@ -63,20 +63,20 @@ I would like to express gratitude to the original author for their contribution 
    ```
 
    - You can specify a custom configuration file using the `--config` (`-c`) option.
-   - Specify the results directory using the `--results-path` (`-r`) option.
+   - You can specify the results directory using the `--results` (`-r`) option.
    - For detailed help, run:
      ```bash
      python -m main run-benchmark --help
      ```
 
-5. **Generate the results**  
+5. **Show the results**  
    Use the following command to generate and view the results:
 
    ```bash
    python -m main show-results
    ```
 
-   - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses. JUst using the `--ground-truth` (`-g`) option.
+   - If the ground truth has changed, you can specify a new ground truth file without regenerating LLM responses. Just using the `--ground-truth` (`-g`) option.
    - To compare multiple experiment results, specify multiple result directories, if not specify default is `./results`.
      `python -m main show-results {folder1} {folder2}`
    - Customize the sorting of evaluation metrics using the `--sort-by` (`-s`) option.
@@ -101,55 +101,49 @@ Here's how to set up your configuration:
    ```yaml
    FrameworkName:
      - task: "ner" # Task type
-       n_runs: 10 # Number of runs per sample
+       n_runs: 10 # Number of runs per sample (required)
        init_kwargs: # Framework initialization parameters
-         prompt: "Your prompt template with {text} placeholder"
-         llm_model: # model name
-         llm_model_alias: # model alias for show results
-         llm_model_host: # openai / google / ollama / transformers
-         host: # models base_url for openai compatibel
-         source_data_pickle_path: # ground truth dataset
-         # Additional framework-specific parameters
+         prompt: "Your prompt template with {text} placeholder" #(required)
+         llm_model: # model name (required)
+         llm_model_alias: # model alias for show results (optional)
+         llm_provider: # openai / google / ollama / vllm / transformers (required)
+         base_url: # models base_url for openai compatibel (optional)
+         source_data_pickle_path: # ground truth dataset (required)
+         api_delay_seconds: 13 # api delay (optional)
+         retries: # Number of retries for the framework. Default is 0 (optional)
+   0
    ```
 
-2. Supported `llm_model_host` values:
+2. Obtained from the
+
+   ```
+
+   ```
+
+3. Supported `llm_provider` values:
 
    - `openai`: OpenAI models (requires OPENAI_API_KEY)
    - `google`: Google models like Gemini (requires GOOGLE_API_KEY)
-   - `ollama`: Local models via Ollama (requires OLLAMA_HOST)
+   - `ollama`: Local models via Ollama (set `base_url` on config)
+   - `vllm`: Local models via Ollama (set `base_url` on config)
    - `transformers`: Hugging Face Transformers models
 
-3. To add a new model configuration, simply create a new entry in the config file with appropriate parameters.
-
-4. Example of adding a new model:
-
-   ```yaml
-   VanillaOpenAIFramework:
-     - task: "ner"
-       n_runs: 10
-       init_kwargs:
-         prompt: "Extract entities from: {text}"
-         llm_model: "gpt-4o-mini"
-         llm_model_host: "openai"
-         source_data_pickle_path: "data/ner.pkl"
-         api_delay_seconds: 13 # optional
-         description_path: "data/schema.json" # optional
-   ```
+4. To add a new model configuration, simply create a new entry in the config file with appropriate parameters.
 
 ## 🔧 Framework Compatibility
 
 Each framework supports specific model hosts. The following table shows the compatibility between frameworks and model hosts:
 
-| Framework                 | OpenAI | Google | Ollama | Transformers |
-| ------------------------- | :----: | :----: | :----: | :----------: |
-| VanillaOpenAIFramework    |   ✅   |   ✅   |   ✅   |              |
-| VanillaGoogleFramework    |        |   ✅   |        |              |
-| VanillaOllamaFramework    |        |        |   ✅   |              |
-| InstructorFramework       |   ✅   |   ✅   |   ✅   |              |
-| MirascopeFramework        |   ✅   |   ✅   |        |              |
-| MarvinFramework           |   ✅   |        |        |              |
-| LlamaIndexFramework       |   ✅   |   ✅   |   ✅   |              |
-| LMFormatEnforcerFramework |        |        |        |      ✅      |
+| Framework                 | OpenAI | Google | Ollama | vllm | Transformers |
+| ------------------------- | :----: | :----: | :----: | :--: | :----------: |
+| VanillaOpenAIFramework    |   ✅   |   ✅   |   ✅   |  ✅  |              |
+| VanillaGoogleFramework    |        |   ✅   |        |      |              |
+| VanillaOllamaFramework    |        |        |   ✅   |      |              |
+| InstructorFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
+| MirascopeFramework        |   ✅   |   ✅   |        |      |              |
+| MarvinFramework           |   ✅   |        |        |      |              |
+| LlamaIndexFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
+| LMFormatEnforcerFramework |        |        |        |      |      ✅      |
 
 If an incompatible framework and model host are defined in the `config.py` and the benchmark is executed,
 they will be filtered through `config/config_checker` and `config/framework_compatibility.yaml`.
@@ -164,11 +158,10 @@ These safeguards are in place to allow for easy updates in the future, so please
   - The data is sampled from the base data to achieve number of entities per row according to some distribution. See `python -m data_sources.generate_dataset generate-ner-data --help` for more details.
 - **Prompt**: `Extract and resolve a list of entities from the following text: {text}`
 - **Evaluation Metrics**:
-  1. Reliability: The percentage of times the framework returns valid labels without errors. The average of all the rows `percent_successful` values.
-  2. Latency: The 95th percentile of the time taken to run the framework on the data.
-  3. Precision: The micro average of the precision of the framework on the data.
-  4. Recall: The micro average of the recall of the framework on the data.
-  5. F1 Score: The micro average of the F1 score of the framework on the data.
+  1. Latency: The 95th percentile of the time taken to run the framework on the data.
+  2. Precision: The micro average of the precision of the framework on the data.
+  3. Recall: The micro average of the recall of the framework on the data.
+  4. F1 Score: The micro average of the F1 score of the framework on the data.
 - **Experiment Details**: Run each row through the framework `n_runs` number of times and log the percent of successful runs for each row.
 
 ## 📊 Adding new data
@@ -190,7 +183,7 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 3. The class should define an `init` method that initializes the base class. Here are the arguments the base class expects:
    - `prompt` (str): Prompt template used. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `llm_model` (str): LLM model to be used. Obtained from the `init_kwargs` in the `./config.yaml` file.
-   - `llm_model_host` (str): LLM model host to be used. Current supported values as `"openai"` and `"transformers"`. Obtained from the `init_kwargs` in the `./config.yaml` file.
+   - `llm_provider` (str): LLM model host to be used. Current supported values as `"openai"` and `"transformers"`. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `retries` (int): Number of retries for the framework. Default is $0$. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `source_data_picke_path` (str): Path to the source data pickle file. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `sample_rows` (int): Number of rows to sample from the source data. Useful for testing on a smaller subset of data. Default is $0$ which uses all rows in source_data_pickle_path for the benchmarking. Obtained from the `init_kwargs` in the `./config.yaml` file.

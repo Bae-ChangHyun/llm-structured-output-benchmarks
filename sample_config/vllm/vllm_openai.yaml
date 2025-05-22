@@ -1,0 +1,11 @@
+VanillaOpenAIFramework:  
+  - task: "ner"
+    n_runs: 1
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}"
+      llm_model: "Qwen/Qwen3-32B-AWQ"
+      llm_model_alias: "Qwen3-32B-AWQ"
+      llm_provider: "vllm"
+      source_data_pickle_path: "data/resume_data.pkl"
+      base_url: "http://118.38.20.101:8000/v1"
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
