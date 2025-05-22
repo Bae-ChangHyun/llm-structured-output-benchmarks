@@ -180,8 +180,6 @@ def show_results(
         if not os.path.exists(results_data_path):
             logger.warning(f"결과 폴더를 찾을 수 없습니다: {results_data_path}")
             continue
-            
-        logger.info(f"폴더에서 결과 로드 중: {results_data_path}")
         
         for file_name in os.listdir(results_data_path):
             if file_name.endswith(".pkl"):
@@ -195,7 +193,7 @@ def show_results(
                             framework_model_info[key] = {
                                 "model": value["llm_model"] if "llm_model" in value else "unknown",
                                 "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
-                                "host": value.get("llm_provider", "unknown")
+                                "host": value.get("llm_provider", value.get("llm_model_host", "unknown")),
                             }
                             # 소스 데이터 경로 저장
                             source_data_path = value.get("source_data_path", "")
