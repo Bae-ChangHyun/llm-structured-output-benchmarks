@@ -46,3 +46,17 @@ MirascopeFramework:
 LMFormatEnforcerFramework:
   hosts:
     - transformers
+  
+LangchainToolFramework:
+  hosts:
+    - openai
+    - google
+    - ollama
+    - vllm
+
+LangchainParserFramework:
+  hosts:
+    - openai
+    - google
+    - ollama
+    - vllm

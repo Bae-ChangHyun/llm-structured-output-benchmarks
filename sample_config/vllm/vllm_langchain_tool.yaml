@@ -1,4 +1,4 @@
-LlamaIndexFramework:  
+LangchainToolFramework:  
   - task: "ner"
     n_runs: 1
     init_kwargs:

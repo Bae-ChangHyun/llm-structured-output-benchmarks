@@ -17,14 +17,14 @@ class InstructorFramework(BaseFramework):
             self.instructor_client = instructor.from_openai(
                 client = OpenAI())
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
-        elif self.llm_provider == "ollama":
+        elif self.llm_provider == "ollama" or self.llm_provider == "vllm":
             self.instructor_client = instructor.from_openai(
                 client = OpenAI(
-                base_url = self.host,
-                api_key = "ollama",
+                base_url = self.base_url,
+                api_key = "empty",
                 ),
                 mode=instructor.Mode.JSON)
-            logger.debug("Ollama 클라이언트가 초기화되었습니다.")
+            logger.debug("Ollama/Vllm 클라이언트가 초기화되었습니다.")
         elif self.llm_provider == "google":
             self.instructor_client = instructor.from_gemini(
                 client=genai.GenerativeModel(model_name=self.llm_model),

@@ -1,4 +1,5 @@
 import os
+import sys
 import pickle
 import time
 from datetime import datetime
@@ -18,6 +19,10 @@ import shutil
 import metrics
 
 load_dotenv()
+
+logger.remove()
+logger.add(sys.stderr, level=os.environ.get("LOG_LEVEL", "INFO").upper())
+pd.set_option('display.max_rows', None)
 
 # Typer 앱 생성 시 자동 완성 기능 비활성화하고 도움말 옵션 설정
 app = typer.Typer(
@@ -158,17 +163,17 @@ def show_results(
             
             if subdirs:
                 results_data_paths = subdirs
-                logger.info(f"결과 경로가 지정되지 않아 results 디렉토리의 모든 하위 폴더를 사용합니다: {results_data_paths}")
+                logger.debug(f"결과 경로가 지정되지 않아 results 디렉토리의 모든 하위 폴더를 사용합니다: {results_data_paths}")
             else:
                 # 하위 디렉토리가 없으면 results 디렉토리 자체를 사용
                 results_data_paths = [results_dir]
-                logger.info(f"results 디렉토리에 하위 폴더가 없어 results 디렉토리 자체를 사용합니다.")
+                logger.debug(f"results 디렉토리에 하위 폴더가 없어 results 디렉토리 자체를 사용합니다.")
     
     # -r 옵션을 유지하기 위한 추가 코드 
     # typer.Argument 대신 typer.Option을 사용하여 -r 옵션 지원
     if len(results_data_paths) == 1 and ',' in results_data_paths[0]:
         results_data_paths = [path.strip() for path in results_data_paths[0].split(',')]
-        logger.info(f"콤마로 구분된 경로를 분리하여 사용합니다: {results_data_paths}")
+        logger.debug(f"콤마로 구분된 경로를 분리하여 사용합니다: {results_data_paths}")
 
     # Combine results from different frameworks
     results = {}
@@ -180,8 +185,6 @@ def show_results(
         if not os.path.exists(results_data_path):
             logger.warning(f"결과 폴더를 찾을 수 없습니다: {results_data_path}")
             continue
-            
-        logger.info(f"폴더에서 결과 로드 중: {results_data_path}")
         
         for file_name in os.listdir(results_data_path):
             if file_name.endswith(".pkl"):
@@ -195,7 +198,7 @@ def show_results(
                             framework_model_info[key] = {
                                 "model": value["llm_model"] if "llm_model" in value else "unknown",
                                 "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
-                                "host": value.get("llm_provider", "unknown")
+                                "host": value.get("llm_provider", value.get("llm_model_host", "unknown")),
                             }
                             # 소스 데이터 경로 저장
                             source_data_path = value.get("source_data_path", "")
@@ -213,11 +216,11 @@ def show_results(
 
     # 로그에 모델 정보 표시
     logger.info(f"총 {len(results)} 개의 모델 결과 로드됨")
-    logger.info("Framework and Model Information:")
+    logger.debug("Framework and Model Information:")
     for framework, info in framework_model_info.items():
         # llm_model_alias가 있으면 사용하고, 없거나 빈 문자열이면 llm_model 사용
         display_model = info["alias"] if info.get("alias") else info["model"]
-        logger.info(f"{framework}: Model = {display_model}({info['host']})")
+        logger.debug(f"{framework}: Model = {display_model}({info['host']})")
     
     # --ground-truth 옵션이 지정된 경우
     if ground_truth_path:
@@ -240,7 +243,7 @@ def show_results(
                     path_counts[path] = path_counts.get(path, 0) + 1
                 
                 source_path = max(path_counts.items(), key=lambda x: x[1])[0]
-                logger.info(f"가장 많이 사용된 소스 데이터 경로를 선택합니다: {source_path}")
+                logger.debug(f"가장 많이 사용된 소스 데이터 경로를 선택합니다: {source_path}")
             else:
                 # 모든 경로가 동일한 경우
                 source_path = next(iter(unique_paths))
@@ -258,7 +261,7 @@ def show_results(
         # 통합된 지표 계산 및 표시 (정렬 기준 적용)
         logger.info(f"모든 지표 (정렬 기준: {sort_by}):")
         combined_df = metrics.combined_metrics(results, ground_truths=ground_truths, sort_by=sort_by)
-        print(f"\n{combined_df}\n")
+        logger.info(f"\n{combined_df}\n")
     except Exception as e:
         logger.error(f"Failed to load ground truth labels from source data: {e}")
         raise typer.Exit(code=1)

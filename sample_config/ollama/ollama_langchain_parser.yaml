@@ -1,6 +1,6 @@
-VanillaOllamaFramework:
+LangchainParserFramework:
   - task: "ner"
-    n_runs: 2
+    n_runs: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "hf.co/Qwen/Qwen3-30B-A3B-GGUF:Q4_K_M"
@@ -11,7 +11,7 @@ VanillaOllamaFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
   - task: "ner"
-    n_runs: 2
+    n_runs: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "hf.co/Qwen/Qwen3-14B-GGUF:Q8_0"
@@ -20,9 +20,9 @@ VanillaOllamaFramework:
       source_data_pickle_path: "data/resume_data.pkl"
       base_url: "http://localhost:11434"
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
-  
+      
   - task: "ner"
-    n_runs: 2
+    n_runs: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "hf.co/Qwen/Qwen3-14B-GGUF:Q4_K_M"
@@ -33,7 +33,7 @@ VanillaOllamaFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
   
   - task: "ner"
-    n_runs: 2
+    n_runs: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "hf.co/google/gemma-3-27b-it-qat-q4_0-gguf:Q4_0"
