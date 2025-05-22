@@ -144,6 +144,8 @@ Each framework supports specific model hosts. The following table shows the comp
 | MarvinFramework           |   ✅   |        |        |      |              |
 | LlamaIndexFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
 | LMFormatEnforcerFramework |        |        |        |      |      ✅      |
+| LangchainToolFramework    |   ✅   |   ✅   |   ✅   |  ✅  |              |
+| LangchainParserFramework  |   ✅   |   ✅   |   ✅   |  ✅  |              |
 
 If an incompatible framework and model host are defined in the `config.py` and the benchmark is executed,
 they will be filtered through `config/config_checker` and `config/framework_compatibility.yaml`.
@@ -211,6 +213,8 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 7. lmformatenforcer
 8. marvin
 9. mirascope
+10. [langchain_tool](https://python.langchain.com/docs/how_to/structured_output/#the-with_structured_output-method)
+11. [langchain_parser](https://python.langchain.com/docs/how_to/structured_output/#prompting-and-parsing-model-outputs-directly)
 
 ## 🧭 Roadmap
 
@@ -220,7 +224,6 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
    | [Jsonformer](https://github.com/1rgs/jsonformer) | 💭 Planning |
    | [Guidance](https://github.com/guidance-ai/guidance) | 💭 Planning |
    | [DsPy](https://dspy-docs.vercel.app/docs/building-blocks/typed_predictors) | 💭 Planning |
-   | [Langchain](https://python.langchain.com/v0.2/docs/tutorials/extraction/) | 💭 Planning |
 
 ## 💡 Contribution guidelines
 

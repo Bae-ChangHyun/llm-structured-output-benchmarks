@@ -9,6 +9,8 @@ from frameworks.mirascope_framework import MirascopeFramework
 from frameworks.vanilla_google_framework import VanillaGoogleFramework
 from frameworks.vanilla_ollama_framework import VanillaOllamaFramework
 from frameworks.vanilla_openai_framework import VanillaOpenAIFramework
+from frameworks.langchain_parser_framework import LangchainParserFramework
+from frameworks.langchain_tool_framework import LangchainToolFramework
 
 
 def factory(class_name: str, *args, **kwargs) -> Any:

@@ -15,7 +15,7 @@ class VanillaOllamaFramework(BaseFramework):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.client = Client(self.host)
+        self.client = Client(self.base_url)
 
         
     def run(

@@ -1,0 +1,61 @@
+# https://ai.google.dev/gemini-api/docs/models?hl=ko
+# https://ai.google.dev/gemini-api/docs/rate-limits?hl=ko#free-tier
+
+LangchainParserFramework:
+  - task: "ner"
+    n_runs: 2
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}, replace null values with 'N/A'"
+      llm_model: "gemini-2.5-flash-preview-05-20"
+      llm_provider: "google"
+      base_url : "https://generativelanguage.googleapis.com/v1beta/openai/"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 5
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 2
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}, replace null values with 'N/A'"
+      llm_model: "gemini-2.0-flash"
+      llm_provider: "google"
+      base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 5
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 2
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}, replace null values with 'N/A'"
+      llm_model: "gemini-2.5-flash-preview-04-17"
+      llm_provider: "google"
+      base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 7
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+  
+  - task: "ner"
+    n_runs: 2
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}, replace null values with 'N/A'"
+      llm_model: "gemini-2.0-flash-lite"
+      llm_provider: "google"
+      base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 3
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+  - task: "ner"
+    n_runs: 2
+    init_kwargs:
+      prompt: "Extract and resolve a list of entities from the following text: {text}, replace null values with 'N/A'"
+      llm_model: "gemini-2.0-flash-thinking-exp-01-21"
+      llm_provider: "google"
+      base_url: "https://generativelanguage.googleapis.com/v1beta/openai/"
+      source_data_pickle_path: "data/resume_data.pkl"
+      api_delay_seconds: 3
+      description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
+
+
+      
