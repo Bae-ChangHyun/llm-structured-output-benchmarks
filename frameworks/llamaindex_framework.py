@@ -37,9 +37,9 @@ class LlamaIndexFramework(BaseFramework):
         )
 
     def run(
-        self, max_tries: int, expected_response: Any = None, inputs: dict = {}
+        self, retries: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(max_tries=max_tries, expected_response=expected_response)
+        @experiment(retries=retries, expected_response=expected_response)
         def run_experiment(inputs):
             response = self.llamaindex_client(**inputs, description="Data model of items present in the text")
             return response

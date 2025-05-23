@@ -53,9 +53,9 @@ class MirascopeFramework(BaseFramework):
         return {"computed_fields": {"previous_errors": previous_errors}}
 
     def run(
-        self, max_tries: int, expected_response: Any = None, inputs: dict = {}
+        self, retries: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(max_tries=max_tries, expected_response=expected_response)
+        @experiment(retries=retries, expected_response=expected_response)
         def run_experiment(inputs):
             response = self.mirascope_client(**inputs)
             return response

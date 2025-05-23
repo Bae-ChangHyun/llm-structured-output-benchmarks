@@ -63,7 +63,7 @@ def run_benchmark(
             results = {}
             for config in config_values:
                 results[config_key] = {}
-                max_tries = config["max_tries"]
+                retries = config["retries"]
                 run_results = {
                     "predictions": [],
                     "percent_successful": [],
@@ -102,7 +102,7 @@ def run_benchmark(
                         predictions, percent_successful, _, latencies = (
                             framework_instance.run(
                                 inputs={"text": row.text},
-                                max_tries=max_tries,
+                                retries=retries,
                                 expected_response=labels,
                             )
                         )
@@ -112,7 +112,7 @@ def run_benchmark(
                 else:
                     predictions, percent_successful, _, latencies = (
                         framework_instance.run(
-                            max_tries=max_tries,
+                            retries=retries,
                         )
                     )
                     run_results["predictions"].append(predictions)

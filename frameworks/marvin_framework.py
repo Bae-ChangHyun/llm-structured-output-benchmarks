@@ -12,9 +12,9 @@ class MarvinFramework(BaseFramework):
         marvin.settings.openai.chat.completions.model = self.llm_model
 
     def run(
-        self, max_tries: int, expected_response: Any = None, inputs: dict = {}
+        self, retries: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(max_tries=max_tries, expected_response=expected_response)
+        @experiment(retries=retries, expected_response=expected_response)
         def run_experiment(inputs):
             response = marvin.cast(self.prompt.format(**inputs), self.response_model)
             return response
