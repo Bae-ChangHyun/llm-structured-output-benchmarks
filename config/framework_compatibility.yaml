@@ -41,7 +41,7 @@ MirascopeFramework:
   hosts:
     - openai
     - google
-    #- ollama(not working)
+    - ollama
 
 LMFormatEnforcerFramework:
   hosts:

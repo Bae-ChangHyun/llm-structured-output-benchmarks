@@ -134,7 +134,7 @@ Each framework supports specific model hosts. The following table shows the comp
 | GoogleFramework           |        |   ✅   |        |      |              |
 | OllamaFramework           |        |        |   ✅   |      |              |
 | InstructorFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
-| MirascopeFramework        |   ✅   |   ✅   |        |      |              |
+| MirascopeFramework        |   ✅   |   ✅   |   ✅   |      |              |
 | MarvinFramework           |   ✅   |        |        |      |              |
 | LlamaIndexFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
 | LMFormatEnforcerFramework |        |        |        |      |      ✅      |
