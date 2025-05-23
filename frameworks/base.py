@@ -14,6 +14,7 @@ import traceback
 
 from data_sources.data_models import ner_model
 from config.config_checker import compatibility_checker, FrameworkCompatibilityError
+from data_sources.output_scheme import ResumeInfo
 
 def response_parsing(response: Any) -> Any:
     if isinstance(response, list):
@@ -181,7 +182,8 @@ class BaseFramework(ABC):
         if self.description_path != "":
             with open(self.description_path, "r", encoding="utf-8") as file:
                 self.descriptions = json.load(file)
-        self.response_model = ner_model(self.entities, self.descriptions)
+        #self.response_model = ner_model(self.entities, self.descriptions)
+        self.response_model = ResumeInfo
 
     @abstractmethod
     def run(self, max_tries: int, expected_response: Any, *args, **kwargs): ...
