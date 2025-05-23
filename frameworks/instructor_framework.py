@@ -40,14 +40,14 @@ class InstructorFramework(BaseFramework):
             if self.llm_provider == "google":
                 response = self.instructor_client.chat.completions.create(
                     response_model=self.response_model,
-                    max_retries=self.retries,
+                    max_retries=retries,
                     messages=[{"role": "user", "content": self.prompt.format(**inputs)}],
                 )
             else:
                 response = self.instructor_client.chat.completions.create(
                     model=self.llm_model,
                     response_model=self.response_model,
-                    max_retries=self.retries,
+                    max_retries=retries,
                     messages=[{"role": "user", "content": self.prompt.format(**inputs)}],
                 )
             return response

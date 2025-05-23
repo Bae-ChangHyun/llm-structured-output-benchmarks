@@ -65,13 +65,13 @@ def calculate_metrics(
 
 
 def experiment(
-    max_tries: int = 10,
+    retries: int = 10,
     expected_response: Any = None,
 ) -> Callable[..., tuple[list[Any], int, Optional[dict], list[list[float]]]]:
     """Decorator to run an LLM call function multiple times and return the responses
 
     Args:
-        max_tries (int): Number of times to run the function
+        retries (int): Number of times to run the function
         expected_response (Any): The expected response. If provided, the decorator will calculate accurary too.
 
     Returns:
@@ -89,11 +89,11 @@ def experiment(
             actual_runs = 0
             success = False
             
-            for i in tqdm(range(max_tries), leave=False):
+            for i in tqdm(range(retries), leave=False):
                 actual_runs = i + 1
                 try:
                     start_time = time.time()
-                    logger.debug(f"실험 실행 {i+1}/{max_tries} 시작")
+                    logger.debug(f"실험 실행 {i+1}/{retries} 시작")
                     response = func(*args, **kwargs)
                     end_time = time.time()
                     
@@ -105,11 +105,11 @@ def experiment(
 
                     responses.append(response)
                     latencies.append(end_time - start_time)
-                    logger.debug(f"실험 실행 {i+1}/{max_tries} Success (Time: {end_time - start_time:.2f}초)")
+                    logger.debug(f"실험 실행 {i+1}/{retries} Success (Time: {end_time - start_time:.2f}초)")
                     success = True
                     break  # 성공하면 즉시 중단
                 except Exception as e:
-                    logger.error(f"실험 실행 {i+1}/{max_tries} Failure: {str(e)}")
+                    logger.error(f"실험 실행 {i+1}/{retries} Failure: {str(e)}")
                     logger.error(traceback.format_exc())
                     if api_delay_seconds > 0:
                         time.sleep(api_delay_seconds)
@@ -139,7 +139,6 @@ class BaseFramework(ABC):
     llm_model: str
     llm_provider: str
     base_url: str
-    retries: int
     source_data_pickle_path: str
     sample_rows: int
     response_model: Any
@@ -152,10 +151,10 @@ class BaseFramework(ABC):
         self.llm_model = kwargs.get("llm_model", "gpt-3.5-turbo")
         self.llm_provider = kwargs.get("llm_provider", "openai")
         self.base_url = kwargs.get("base_url", os.environ.get("OLLAMA_HOST", ""))
-        self.retries = kwargs.get("retries", 0)
         self.device = kwargs.get("device", "cpu")
         self.api_delay_seconds = kwargs.get("api_delay_seconds", 0)  # API 지연 시간 설정
         self.description_path = kwargs.get("description_path", "")
+        
 
         # Check framework compatibility with model host
         framework_name = self.__class__.__name__
@@ -186,4 +185,4 @@ class BaseFramework(ABC):
         self.response_model = ResumeInfo
 
     @abstractmethod
-    def run(self, max_tries: int, expected_response: Any, *args, **kwargs): ...
+    def run(self, retries: int, expected_response: Any, *args, **kwargs): ...
