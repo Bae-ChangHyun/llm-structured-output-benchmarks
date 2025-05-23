@@ -151,64 +151,107 @@ def show_results(
         "--sort-by", "-s",
         help="정렬 기준 ('f1', 'recall', 'precision', 'reliability', 'latency' 중 하나)",
     ),
+    specific_files: list[str] = typer.Option(
+        None,
+        "--files", "-f",
+        help="분석할 특정 pkl 파일들. 여러 파일은 쉼표로 구분: file1.pkl,file2.pkl",
+    ),
 ):
     
-    # 결과 경로가 지정되지 않은 경우 기본값으로 results 디렉토리의 모든 하위 폴더 사용
-    if results_data_paths is None or len(results_data_paths) == 0:
-        results_dir = "results"
-        if os.path.exists(results_dir) and os.path.isdir(results_dir):
-            # results 디렉토리 내의 모든 하위 디렉토리를 가져옴
-            subdirs = [os.path.join(results_dir, d) for d in os.listdir(results_dir) 
-                      if os.path.isdir(os.path.join(results_dir, d))]
-            
-            if subdirs:
-                results_data_paths = subdirs
-                logger.debug(f"결과 경로가 지정되지 않아 results 디렉토리의 모든 하위 폴더를 사용합니다: {results_data_paths}")
-            else:
-                # 하위 디렉토리가 없으면 results 디렉토리 자체를 사용
-                results_data_paths = [results_dir]
-                logger.debug(f"results 디렉토리에 하위 폴더가 없어 results 디렉토리 자체를 사용합니다.")
-    
-    # -r 옵션을 유지하기 위한 추가 코드 
-    # typer.Argument 대신 typer.Option을 사용하여 -r 옵션 지원
-    if len(results_data_paths) == 1 and ',' in results_data_paths[0]:
-        results_data_paths = [path.strip() for path in results_data_paths[0].split(',')]
-        logger.debug(f"콤마로 구분된 경로를 분리하여 사용합니다: {results_data_paths}")
-
-    # Combine results from different frameworks
-    results = {}
-    framework_model_info = {}
-    source_data_paths = {}
-
-    # 여러 경로를 순회
-    for results_data_path in results_data_paths:
-        if not os.path.exists(results_data_path):
-            logger.warning(f"결과 폴더를 찾을 수 없습니다: {results_data_path}")
-            continue
+    # 특정 파일이 지정된 경우
+    if specific_files:
+        results = {}
+        framework_model_info = {}
+        source_data_paths = {}
         
-        for file_name in os.listdir(results_data_path):
-            if file_name.endswith(".pkl"):
-                file_path = os.path.join(results_data_path, file_name)
-                with open(file_path, "rb") as file:
-                    try:
-                        framework_results = pickle.load(file)
-                        
-                        for key, value in framework_results.items():
-                            # 모델 정보를 framework_model_info에 저장
-                            framework_model_info[key] = {
-                                "model": value["llm_model"] if "llm_model" in value else "unknown",
-                                "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
-                                "host": value.get("llm_provider", value.get("llm_model_host", "unknown")),
-                            }
-                            # 소스 데이터 경로 저장
-                            source_data_path = value.get("source_data_path", "")
-                            if source_data_path:
-                                source_data_paths[key] = source_data_path
-                        
-                        results.update(framework_results)
-                        logger.debug(f"로드된 결과: {file_path}")
-                    except Exception as e:
-                        logger.error(f"파일 로드 중 오류 발생: {file_path}: {e}")
+        # 쉼표로 구분된 파일 목록 처리
+        if len(specific_files) == 1 and ',' in specific_files[0]:
+            specific_files = [path.strip() for path in specific_files[0].split(',')]
+            
+        for file_path in specific_files:
+            if not os.path.exists(file_path):
+                logger.warning(f"지정한 파일을 찾을 수 없습니다: {file_path}")
+                continue
+            
+            if not file_path.endswith('.pkl'):
+                logger.warning(f"지정한 파일이 pkl 형식이 아닙니다: {file_path}")
+                continue
+                
+            with open(file_path, "rb") as file:
+                try:
+                    framework_results = pickle.load(file)
+                    
+                    for key, value in framework_results.items():
+                        # 모델 정보를 framework_model_info에 저장
+                        framework_model_info[key] = {
+                            "model": value["llm_model"] if "llm_model" in value else "unknown",
+                            "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
+                            "host": value.get("llm_provider", value.get("llm_model_host", "unknown")),
+                        }
+                        # 소스 데이터 경로 저장
+                        source_data_path = value.get("source_data_path", "")
+                        if source_data_path:
+                            source_data_paths[key] = source_data_path
+                    
+                    results.update(framework_results)
+                    logger.debug(f"로드된 결과: {file_path}")
+                except Exception as e:
+                    logger.error(f"파일 로드 중 오류 발생: {file_path}: {e}")
+    else:
+        # 결과 경로가 지정되지 않은 경우 기본값으로 results 디렉토리의 모든 하위 폴더 사용
+        if results_data_paths is None or len(results_data_paths) == 0:
+            results_dir = "results"
+            if os.path.exists(results_dir) and os.path.isdir(results_dir):
+                # results 디렉토리 내의 모든 하위 디렉토리를 가져옴
+                subdirs = [os.path.join(results_dir, d) for d in os.listdir(results_dir) 
+                          if os.path.isdir(os.path.join(results_dir, d))]
+                
+                if subdirs:
+                    results_data_paths = subdirs
+                    logger.debug(f"결과 경로가 지정되지 않아 results 디렉토리의 모든 하위 폴더를 사용합니다: {results_data_paths}")
+                else:
+                    # 하위 디렉토리가 없으면 results 디렉토리 자체를 사용
+                    results_data_paths = [results_dir]
+                    logger.debug(f"results 디렉토리에 하위 폴더가 없어 results 디렉토리 자체를 사용합니다.")
+        
+        # typer.Argument 대신 typer.Option을 사용하여 -r 옵션 지원
+        if len(results_data_paths) == 1 and ',' in results_data_paths[0]:
+            results_data_paths = [path.strip() for path in results_data_paths[0].split(',')]
+            logger.debug(f"콤마로 구분된 경로를 분리하여 사용합니다: {results_data_paths}")
+
+        # Combine results from different frameworks
+        results = {}
+        framework_model_info = {}
+        source_data_paths = {}
+
+        for results_data_path in results_data_paths:
+            if not os.path.exists(results_data_path):
+                logger.warning(f"결과 폴더를 찾을 수 없습니다: {results_data_path}")
+                continue
+            
+            for file_name in os.listdir(results_data_path):
+                if file_name.endswith(".pkl"):
+                    file_path = os.path.join(results_data_path, file_name)
+                    with open(file_path, "rb") as file:
+                        try:
+                            framework_results = pickle.load(file)
+                            
+                            for key, value in framework_results.items():
+                                # 모델 정보를 framework_model_info에 저장
+                                framework_model_info[key] = {
+                                    "model": value["llm_model"] if "llm_model" in value else "unknown",
+                                    "alias": value.get("llm_model_alias", ""),  # 별칭 정보 추가
+                                    "host": value.get("llm_provider", value.get("llm_model_host", "unknown")),
+                                }
+                                # 소스 데이터 경로 저장
+                                source_data_path = value.get("source_data_path", "")
+                                if source_data_path:
+                                    source_data_paths[key] = source_data_path
+                            
+                            results.update(framework_results)
+                            logger.debug(f"로드된 결과: {file_path}")
+                        except Exception as e:
+                            logger.error(f"파일 로드 중 오류 발생: {file_path}: {e}")
 
     if not results:
         logger.error("처리할 결과 파일이 없습니다.")
@@ -254,11 +297,12 @@ def show_results(
             
     # 선택된 경로에서 데이터 로드
     try:
+        # source_data = pd.read_pickle(source_path)
+        # ground_truths = source_data["labels"].tolist()
         source_data = pd.read_pickle(source_path)
         ground_truths = source_data["labels"].tolist()
-        logger.info(f"Ground truth labels loaded successfully: {len(ground_truths)} entries")
+        #logger.info(f"Ground truth labels loaded successfully: {len(ground_truths)} entries")
         
-        # 통합된 지표 계산 및 표시 (정렬 기준 적용)
         logger.info(f"모든 지표 (정렬 기준: {sort_by}):")
         combined_df = metrics.combined_metrics(results, ground_truths=ground_truths, sort_by=sort_by)
         logger.info(f"\n{combined_df}\n")
@@ -284,7 +328,7 @@ def visualize(
     import sys
     import os
     
-    streamlit_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web_app.py")
+    streamlit_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_diff.py")
     
     cmd = [
         sys.executable, "-m", "streamlit", "run", 
