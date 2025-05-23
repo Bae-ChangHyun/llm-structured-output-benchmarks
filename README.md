@@ -101,7 +101,7 @@ Here's how to set up your configuration:
    ```yaml
    FrameworkName:
      - task: "ner" # Task type
-       n_runs: 10 # Number of runs per sample (required)
+       max_tries: 10 # Number of runs per sample (required)
        init_kwargs: # Framework initialization parameters
          prompt: "Your prompt template with {text} placeholder" #(required)
          llm_model: # model name (required)
@@ -158,7 +158,7 @@ These safeguards are in place to allow for easy updates in the future, so please
   2. Precision: The micro average of the precision of the framework on the data.
   3. Recall: The micro average of the recall of the framework on the data.
   4. F1 Score: The micro average of the F1 score of the framework on the data.
-- **Experiment Details**: Run each row through the framework `n_runs` number of times and log the percent of successful runs for each row.
+- **Experiment Details**: Run each row through the framework `max_tries` number of times and log the percent of successful runs for each row.
 
 ## 📊 Adding new data
 
@@ -184,15 +184,15 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
    - `sample_rows` (int): Number of rows to sample from the source data. Useful for testing on a smaller subset of data. Default is $0$ which uses all rows in source_data_pickle_path for the benchmarking. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `response_model` (Any): The response model to be used. Internally passed by the benchmarking script.
 4. The class should define a `run` method that takes three arguments:
-   - `n_runs`: number of times to repeat each text
+   - `max_tries`: number of times to repeat each text
    - `expected_response`: Output expected from the framework. Use default value of `None`
    - `inputs`: a dictionary of `{"text": str}` where `str` is the text to be sent to the framework. Use default value of empty dictionary `{}`
 5. This `run` method should create another `run_experiment` function that takes `inputs` as argument, runs that input through the framework and returns the output.
-6. The `run_experiment` function should be annotated with the `@experiment` decorator from `frameworks.base` with `n_runs`, `expected_resposne` and `task` as arguments.
+6. The `run_experiment` function should be annotated with the `@experiment` decorator from `frameworks.base` with `max_tries`, `expected_resposne` and `task` as arguments.
 7. The `run` method should call the `run_experiment` function and return the four outputs `predictions`, `percent_successful`, `metrics` and `latencies`.
 8. Import this new class in `frameworks/__init__.py`.
 9. Add a new entry in the `./config.yaml` file with the name of the class as the key. The yaml entry can have the following fields
-   - `n_runs`: number of times to repeat each text
+   - `max_tries`: number of times to repeat each text
    - `init_kwargs`: all the arguments that need to be passed to the `init` method of the class, including those mentioned in step 3 above.
 
 ## Framework Reference

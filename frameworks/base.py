@@ -64,13 +64,13 @@ def calculate_metrics(
 
 
 def experiment(
-    n_runs: int = 10,
+    max_tries: int = 10,
     expected_response: Any = None,
 ) -> Callable[..., tuple[list[Any], int, Optional[dict], list[list[float]]]]:
     """Decorator to run an LLM call function multiple times and return the responses
 
     Args:
-        n_runs (int): Number of times to run the function
+        max_tries (int): Number of times to run the function
         expected_response (Any): The expected response. If provided, the decorator will calculate accurary too.
 
     Returns:
@@ -85,10 +85,14 @@ def experiment(
             api_delay_seconds = getattr(self, "api_delay_seconds", 0)
 
             responses, latencies = [], []
-            for i in tqdm(range(n_runs), leave=False):
+            actual_runs = 0
+            success = False
+            
+            for i in tqdm(range(max_tries), leave=False):
+                actual_runs = i + 1
                 try:
                     start_time = time.time()
-                    logger.debug(f"실험 실행 {i+1}/{n_runs} 시작")
+                    logger.debug(f"실험 실행 {i+1}/{max_tries} 시작")
                     response = func(*args, **kwargs)
                     end_time = time.time()
                     
@@ -100,17 +104,18 @@ def experiment(
 
                     responses.append(response)
                     latencies.append(end_time - start_time)
-                    logger.debug(f"실험 실행 {i+1}/{n_runs} Success (Time: {end_time - start_time:.2f}초)")
+                    logger.debug(f"실험 실행 {i+1}/{max_tries} Success (Time: {end_time - start_time:.2f}초)")
+                    success = True
+                    break  # 성공하면 즉시 중단
+                except Exception as e:
+                    logger.error(f"실험 실행 {i+1}/{max_tries} Failure: {str(e)}")
+                    logger.error(traceback.format_exc())
                     if api_delay_seconds > 0:
                         time.sleep(api_delay_seconds)
-                except Exception as e:
-                    logger.error(f"실험 실행 {i+1}/{n_runs} Failure: {str(e)}")
-
-                    logger.error(traceback.format_exc())
 
             num_successful = len(responses)
-            percent_successful = num_successful / n_runs
-            logger.info(f"총 {n_runs}회 시도 중 {num_successful}회 성공 (성공률: {percent_successful:.2%})")
+            percent_successful = num_successful / actual_runs  # 실제 시도 횟수로 계산
+            logger.info(f"총 {actual_runs}회 시도 중 {num_successful}회 성공 (성공률: {percent_successful:.2%})")
 
             framework_metrics = []
             for response in responses:
@@ -179,4 +184,4 @@ class BaseFramework(ABC):
         self.response_model = ner_model(self.entities, self.descriptions)
 
     @abstractmethod
-    def run(self, n_runs: int, expected_response: Any, *args, **kwargs): ...
+    def run(self, max_tries: int, expected_response: Any, *args, **kwargs): ...

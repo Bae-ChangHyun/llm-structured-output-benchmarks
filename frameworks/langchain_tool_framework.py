@@ -24,9 +24,9 @@ class LangchainToolFramework(BaseFramework):
         self.structured_llm = self.llm.with_structured_output(self.response_model)
 
     def run(
-        self, n_runs: int, expected_response: Any = None, inputs: dict = {}
+        self, max_tries: int, expected_response: Any = None, inputs: dict = {}
     ) -> tuple[list[Any], float, dict, list[list[float]]]:
-        @experiment(n_runs=n_runs, expected_response=expected_response)
+        @experiment(max_tries=max_tries, expected_response=expected_response)
         def run_experiment(inputs):
 
             prompt = ChatPromptTemplate.from_messages([

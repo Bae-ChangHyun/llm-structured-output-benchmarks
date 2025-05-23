@@ -3,7 +3,7 @@
 
 MirascopeFramework:
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.5-flash-preview-05-20"
@@ -14,7 +14,7 @@ MirascopeFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash"
@@ -25,7 +25,7 @@ MirascopeFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.5-flash-preview-04-17"
@@ -36,7 +36,7 @@ MirascopeFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
   
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash-lite"
@@ -47,7 +47,7 @@ MirascopeFramework:
       description_path: "/home/bch/Project/main_project/scout_partners/llm-ner-benchmarks/data/schema.json"
 
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "gemini-2.0-flash-thinking-exp-01-21"

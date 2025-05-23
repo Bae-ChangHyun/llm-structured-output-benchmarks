@@ -1,6 +1,6 @@
 LlamaIndexFramework:  
   - task: "ner"
-    n_runs: 1
+    max_tries: 1
     init_kwargs:
       prompt: "Extract and resolve a list of entities from the following text: {text}"
       llm_model: "Qwen/Qwen3-32B-AWQ"
