@@ -26,15 +26,6 @@ def format_framework_name(framework_name, model_host=None):
 
 
 def reliability_metric(percent_successful: dict[str, list[float]], model_hosts=None):
-    """신뢰성 지표를 계산하는 함수.
-    
-    Args:
-        percent_successful (dict): 프레임워크별 실행 성공률
-        model_hosts (dict, optional): 모델 호스트 정보
-        
-    Returns:
-        pd.DataFrame: 신뢰성 지표가 포함된 데이터프레임
-    """
     # 프레임워크와 모델 이름 분리
     frameworks = []
     models = []
@@ -74,16 +65,6 @@ def reliability_metric(percent_successful: dict[str, list[float]], model_hosts=N
 
 
 def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, model_hosts=None):
-    """지연 시간 지표를 계산하는 함수.
-    
-    Args:
-        latencies (dict): 프레임워크별 지연 시간 목록
-        percentile (int): 백분위수
-        model_hosts (dict, optional): 모델 호스트 정보
-        
-    Returns:
-        pd.DataFrame: 지연 시간 지표가 포함된 데이터프레임
-    """
     # Flatten the list of latencies
     latencies = {
         key: list(itertools.chain.from_iterable(value))
@@ -128,7 +109,6 @@ def latency_metric(latencies: dict[str, list[float]], percentile: int = 95, mode
 
 def flatten_json_to_set(data, prefix=""):
     """JSON 구조를 평면화하여 비교 가능한 문자열 집합으로 변환합니다.
-    완전히 동일한 값만 일치로 간주합니다.
     
     Args:
         data: JSON 형태의 데이터 (dict, list, 또는 primitive type)
@@ -145,7 +125,6 @@ def flatten_json_to_set(data, prefix=""):
             if value is not None:  # None 값은 제외
                 result.update(flatten_json_to_set(value, new_prefix))
     elif isinstance(data, list):
-        # 리스트의 경우 인덱스를 포함하여 완전히 동일한 항목만 일치할 수 있게 함
         for i, item in enumerate(data):
             new_prefix = f"{prefix}[{i}]"
             if item is not None:  # None 값은 제외
@@ -153,7 +132,6 @@ def flatten_json_to_set(data, prefix=""):
     else:
         # primitive type (str, int, float, bool)
         if data is not None and data != "":  # None과 빈 문자열 제외
-            # 완전한 문자열 일치를 위해 값을 문자열로 변환
             result.add(f"{prefix}={str(data)}")
     
     return result
@@ -161,7 +139,6 @@ def flatten_json_to_set(data, prefix=""):
 
 def calculate_json_metrics(pred_json, truth_json):
     """두 JSON 구조를 비교하여 TP, FP, FN을 계산합니다.
-    완전히 동일한 값만 일치로 간주합니다.
     
     Args:
         pred_json: 예측된 JSON 데이터
@@ -172,15 +149,18 @@ def calculate_json_metrics(pred_json, truth_json):
     """
     pred_set = flatten_json_to_set(pred_json)
     truth_set = flatten_json_to_set(truth_json)
+    print(pred_set)
     
     # True Positives: 예측과 실제가 일치하는 항목
     true_positives = len(pred_set.intersection(truth_set))
     
     # False Positives: 예측은 했지만 실제론 없는 항목
     false_positives = len(pred_set - truth_set)
+    #print(f"FP: {pred_set - truth_set}")
     
     # False Negatives: 예측하지 못한 실제 항목
     false_negatives = len(truth_set - pred_set)
+    #print(f"FN: {truth_set - pred_set}")
     
     return true_positives, false_positives, false_negatives
 
@@ -284,6 +264,9 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
     # ground_truths가 None인지 확인
     if ground_truths is None:
         # 여기서 ground_truths가 필요한 경우의 처리
+        # 예를 들어, 각 프레임워크의 results에서 정답을 가져올 수 있다면:
+        # ground_truths = next(iter(results.values())).get("ground_truth", [])
+        # 아니면 빈 리스트로 처리:
         ground_truths = []
     
     # 데이터 준비
@@ -313,7 +296,7 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
         
         # 데이터프레임이 비어있는지 확인
         if ner_df.empty or reliability_df.empty or latency_df.empty:
-            logger.warning("하나 이상의 지표 데이터프레임이 비어 있습니다.")
+            print("경고: 하나 이상의 지표 데이터프레임이 비어 있습니다.")
         
         # 데이터프레임 병합
         combined_df = ner_df.merge(
@@ -354,7 +337,7 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
             ascending = (sort_column == "Latency")
             combined_df = combined_df.sort_values(by=sort_column, ascending=ascending)
         else:
-            logger.warning(f"정렬 컬럼 '{sort_column}'이 데이터프레임에 존재하지 않습니다.")
+            print(f"경고: 정렬 컬럼 '{sort_column}'이 데이터프레임에 존재하지 않습니다.")
         
         # 인덱스 재설정 (인덱스를 순차적으로 새로 부여하고 인덱스 컬럼 제거)
         combined_df = combined_df.reset_index(drop=True)
@@ -362,78 +345,8 @@ def combined_metrics(results: dict[str, dict], ground_truths=None, percentile: i
         return combined_df
     
     except Exception as e:
-        logger.error(f"combined_metrics 함수 실행 중 오류 발생: {e}")
+        print(f"combined_metrics 함수 실행 중 오류 발생: {e}")
         # 오류 발생시 빈 데이터프레임 반환
         return pd.DataFrame(columns=["Framework", "Model(host)", "micro_precision", "micro_recall", 
                                    "micro_f1", "Reliability", "Latency"])
 
-
-def compare_json_structures(pred_json, truth_json):
-    """두 JSON 구조를 비교하여 차이점을 상세하게 출력합니다.
-    
-    Args:
-        pred_json: 예측된 JSON 데이터
-        truth_json: 실제 정답 JSON 데이터
-        
-    Returns:
-        dict: 카테고리별 차이점 정보
-    """
-    pred_set = flatten_json_to_set(pred_json)
-    truth_set = flatten_json_to_set(truth_json)
-    
-    # 공통 항목
-    common = pred_set.intersection(truth_set)
-    
-    # 오직 예측에만 존재하는 항목
-    only_in_pred = pred_set - truth_set
-    
-    # 오직 실제에만 존재하는 항목
-    only_in_truth = truth_set - pred_set
-    
-    return {
-        "common_count": len(common),
-        "only_in_pred_count": len(only_in_pred),
-        "only_in_truth_count": len(only_in_truth),
-        "common": sorted(list(common)),
-        "only_in_pred": sorted(list(only_in_pred)),
-        "only_in_truth": sorted(list(only_in_truth))
-    }
-
-
-def save_comparison_details(results, ground_truths, output_path):
-    """예측과 실제 간의 자세한 비교 정보를 JSON 파일로 저장합니다.
-    
-    Args:
-        results (dict): 프레임워크별 예측 결과
-        ground_truths (list): 정답 데이터 경로 목록
-        output_path (str): 결과를 저장할 경로
-        
-    Returns:
-        None
-    """
-    comparison_details = {}
-    
-    for framework, values in results.items():
-        framework_details = []
-        predictions = values.get("predictions", [])
-        
-        for i, pred_runs in enumerate(predictions):
-            if i >= len(ground_truths):
-                continue
-                
-            with open(ground_truths[i], 'r') as f:
-                truth = json.load(f)
-            
-            for run_idx, pred in enumerate(pred_runs):
-                comparison = compare_json_structures(pred, truth)
-                comparison["run_index"] = run_idx
-                comparison["document_index"] = i
-                comparison["document_id"] = ground_truths[i]
-                framework_details.append(comparison)
-        
-        comparison_details[framework] = framework_details
-    
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(comparison_details, f, ensure_ascii=False, indent=2)
-    
-    logger.info(f"비교 세부 정보가 {output_path}에 저장되었습니다.")
