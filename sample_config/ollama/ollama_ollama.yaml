@@ -1,4 +1,4 @@
-VanillaOllamaFramework:
+OllamaFramework:
   - task: "ner"
     n_runs: 2
     init_kwargs:

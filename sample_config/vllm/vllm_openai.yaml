@@ -1,4 +1,4 @@
-VanillaOpenAIFramework:  
+OpenAIFramework:  
   - task: "ner"
     n_runs: 1
     init_kwargs:

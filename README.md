@@ -114,13 +114,7 @@ Here's how to set up your configuration:
    0
    ```
 
-2. Obtained from the
-
-   ```
-
-   ```
-
-3. Supported `llm_provider` values:
+2. Supported `llm_provider` values:
 
    - `openai`: OpenAI models (requires OPENAI_API_KEY)
    - `google`: Google models like Gemini (requires GOOGLE_API_KEY)
@@ -128,17 +122,17 @@ Here's how to set up your configuration:
    - `vllm`: Local models via Ollama (set `base_url` on config)
    - `transformers`: Hugging Face Transformers models
 
-4. To add a new model configuration, simply create a new entry in the config file with appropriate parameters.
+3. To add a new model configuration, simply create a new entry in the config file with appropriate parameters.
 
 ## 🔧 Framework Compatibility
 
 Each framework supports specific model hosts. The following table shows the compatibility between frameworks and model hosts:
 
-| Framework                 | OpenAI | Google | Ollama | vllm | Transformers |
+| Framework \ Model host    | OpenAI | Google | Ollama | Vllm | Transformers |
 | ------------------------- | :----: | :----: | :----: | :--: | :----------: |
-| VanillaOpenAIFramework    |   ✅   |   ✅   |   ✅   |  ✅  |              |
-| VanillaGoogleFramework    |        |   ✅   |        |      |              |
-| VanillaOllamaFramework    |        |        |   ✅   |      |              |
+| OpenAIFramework           |   ✅   |   ✅   |   ✅   |  ✅  |              |
+| GoogleFramework           |        |   ✅   |        |      |              |
+| OllamaFramework           |        |        |   ✅   |      |              |
 | InstructorFramework       |   ✅   |   ✅   |   ✅   |  ✅  |              |
 | MirascopeFramework        |   ✅   |   ✅   |        |      |              |
 | MarvinFramework           |   ✅   |        |        |      |              |
@@ -173,8 +167,6 @@ These safeguards are in place to allow for easy updates in the future, so please
    - `labels`: List of labels associated with the text
    - See `data/ner.pkl` for an example.
 2. Add the path to the new pickle file in the `./config.yaml` file under the `source_data_pickle_path` key for all the frameworks you want to test.
-3. Run the benchmark using `python -m main run-benchmark` to test the new data on all the frameworks!
-4. Generate the results using `python -m main generate-results`
 
 ## 🏗️ Adding a new framework
 
@@ -185,7 +177,8 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 3. The class should define an `init` method that initializes the base class. Here are the arguments the base class expects:
    - `prompt` (str): Prompt template used. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `llm_model` (str): LLM model to be used. Obtained from the `init_kwargs` in the `./config.yaml` file.
-   - `llm_provider` (str): LLM model host to be used. Current supported values as `"openai"` and `"transformers"`. Obtained from the `init_kwargs` in the `./config.yaml` file.
+   - `llm_provider` (str): LLM model host to be used. Current supported values as `"openai"`,`"transformers"`,`"ollama"`,`"vllm"`,`"google"`.
+     Obtained from the `init_kwargs`in the`./config.yaml` file.
    - `retries` (int): Number of retries for the framework. Default is $0$. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `source_data_picke_path` (str): Path to the source data pickle file. Obtained from the `init_kwargs` in the `./config.yaml` file.
    - `sample_rows` (int): Number of rows to sample from the source data. Useful for testing on a smaller subset of data. Default is $0$ which uses all rows in source_data_pickle_path for the benchmarking. Obtained from the `init_kwargs` in the `./config.yaml` file.
@@ -204,9 +197,9 @@ The easiest way to create a new framework is to reference the `./frameworks/inst
 
 ## Framework Reference
 
-1. [vanilla_openai](https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses)
-2. [vanilla_google](https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=python)
-3. [vanilla_ollama](https://ollama.com/blog/structured-outputs)
+1. [openai](https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses)
+2. [google](https://ai.google.dev/gemini-api/docs/structured-output?hl=ko&lang=python)
+3. [ollama](https://ollama.com/blog/structured-outputs)
 4. [guradrails](https://github.com/guardrails-ai/guardrails)
 5. [instructor](https://python.useinstructor.com)
 6. [llamaindex](https://docs.llamaindex.ai/en/stable/examples/output_parsing/openai_pydantic_program/)

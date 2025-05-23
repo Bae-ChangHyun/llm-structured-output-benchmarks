@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from frameworks.base import BaseFramework, experiment
 
 
-class VanillaGoogleFramework(BaseFramework):
+class GoogleFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         

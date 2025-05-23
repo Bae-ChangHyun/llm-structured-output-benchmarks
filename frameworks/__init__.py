@@ -6,9 +6,9 @@ from frameworks.llamaindex_framework import LlamaIndexFramework
 from frameworks.lm_format_enforcer_framework import LMFormatEnforcerFramework
 from frameworks.marvin_framework import MarvinFramework
 from frameworks.mirascope_framework import MirascopeFramework
-from frameworks.vanilla_google_framework import VanillaGoogleFramework
-from frameworks.vanilla_ollama_framework import VanillaOllamaFramework
-from frameworks.vanilla_openai_framework import VanillaOpenAIFramework
+from frameworks.google_framework import GoogleFramework
+from frameworks.ollama_framework import OllamaFramework
+from frameworks.openai_framework import OpenAIFramework
 from frameworks.langchain_parser_framework import LangchainParserFramework
 from frameworks.langchain_tool_framework import LangchainToolFramework
 

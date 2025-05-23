@@ -7,14 +7,14 @@ from loguru import logger
 from frameworks.base import BaseFramework, experiment
 
 
-class VanillaOpenAIFramework(BaseFramework):
+class OpenAIFramework(BaseFramework):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         
         if self.llm_provider == "openai":
             self.client = OpenAI()
             logger.debug("OpenAI 클라이언트가 초기화되었습니다.")
-        elif self.llm_provider == "ollama" or self.llm_provider:
+        elif self.llm_provider == "ollama" or self.llm_provider == "vllm":
             self.client = OpenAI(
                 base_url=self.base_url,
                 api_key="empty",

@@ -9,7 +9,7 @@ from loguru import logger
 from frameworks.base import BaseFramework, experiment
 
 
-class VanillaOllamaFramework(BaseFramework):
+class OllamaFramework(BaseFramework):
     """_summary_
     https://ollama.com/blog/structured-outputs
     """
